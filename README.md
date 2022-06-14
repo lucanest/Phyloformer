@@ -17,3 +17,7 @@ Fast and accurate Phylogeny estimation with self-attention Networks
 ## Install
 
 ## Usage
+
+## Tests and benchmarking
+The data simulated using seq-gen is available at: git@github.com:lucanest/Phyloformer.git
+
