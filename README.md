@@ -1,5 +1,4 @@
-# Phyloformer
-Fast and accurate Phylogeny estimation with self-attention Networks
+# Phyloformer: Fast and accurate Phylogeny estimation with self-attention Networks
 
 ![](sketch.png)
 
@@ -7,7 +6,8 @@ Fast and accurate Phylogeny estimation with self-attention Networks
 - Bastien Boussau
 - Laurent Jacob
 
-<details><summary>Citation</summary>
+This repository contains the scripts, data, and plots for [the paper](https://arxiv.org/abs/???):
+
 
 ```bibtex
 @article{Nesterenko2022phyloformer,
@@ -20,7 +20,6 @@ WITH SELF-ATTENTION NETWORKS},
   journal={bioRxiv}
 }
 ```
-</details>
 
 ## Project structure
 
