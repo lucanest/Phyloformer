@@ -27,17 +27,9 @@ class AttentionNet(nn.Module):
             self.fNNs.append(nn.Sequential(*[nn.Conv2d(in_channels=64,out_channels=256, kernel_size=1,stride=1,device=device),
         nn.GELU(),nn.Conv2d(in_channels=256,out_channels=64, kernel_size=1,stride=1,device=device)]))
             
-        self.train_losses=[]
-        self.val_losses=[]
-        self.mean_val_losses=[]
-        self.val_MAEs=[]
-        self.val_MREs=[]
-        self.val_predictions=[]
-        self.train_predictions=[]
         self.nb_seq=nb_seq
         self.seq_len=seq_len
         self.nb_pairs=int(binom(nb_seq,2))
-        self.train_history=[]
         self.device=device
 
         seq2pair = torch.zeros(self.nb_pairs, self.nb_seq)
