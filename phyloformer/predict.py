@@ -37,12 +37,13 @@ def configure(net,seqs,device):
             k = k+1
     net.seq2pair=seq2pair.to(device)
 
+scriptdir=os.path.dirname(os.path.realpath(__file__))
 parser = argparse.ArgumentParser()
 parser.add_argument('alidir', type=str, help='path to input directory containing the\
 .fasta alignments')
 parser.add_argument('--o', type=str, default='', help='path to the output directory were the\
 .tree tree files will be saved')
-parser.add_argument('--m', type=str, default='models/seqgen_model_state_dict.pt', help="path to the NN model's state dictionary")
+parser.add_argument('--m', type=str, default=os.path.join(scriptdir,'models/seqgen_model_state_dict.pt'), help="path to the NN model's state dictionary")
 parser.add_argument('--gpu', type=str, default='', help='gpu option')
 
 args = parser.parse_args()
