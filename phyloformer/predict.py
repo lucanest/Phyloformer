@@ -12,8 +12,6 @@ from phyloformer import AttentionNet
 amino_acids = np.array(['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H',
  'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'X', '-'])
 
-#convert=lambda x: 'taxon'+str(int(x.split('_')[-1])-1)
-
 def ali_parser(file):
     sequences={}
     for seq_record in SeqIO.parse(file, "fasta"):
@@ -72,7 +70,6 @@ for ali in tensors:
     print(f'processing alignment {ali}...')
     counter=0
     seqs=ali_parser(alidir+ali)
-    #seqs={convert(sequence):seqs[sequence] for sequence in seqs}
     configure(model,seqs,device)
     ids=[seq for seq in seqs]
     tensor=tensors[ali][None,:,:]
