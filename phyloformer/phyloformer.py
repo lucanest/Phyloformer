@@ -6,7 +6,7 @@ from attentions import KernelAxialMultiAttention
 class AttentionNet(nn.Module):
     '''Phyloformer Network'''     
     def __init__(self,dropout=0.0,
-    batch_norm=False,nb_seq=20,seq_len=200,n_blocks=1,device='cpu',linear=False):
+    nb_seq=20,seq_len=200,n_blocks=1,device='cpu'):
         super(AttentionNet,self).__init__()
         self.n_blocks=n_blocks
         self.rowAttentions=nn.ModuleList()

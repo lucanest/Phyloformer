@@ -12,6 +12,8 @@ from phyloformer import AttentionNet
 amino_acids = np.array(['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H',
  'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'X', '-'])
 
+#convert=lambda x: 'taxon'+str(int(x.split('_')[-1])-1)
+
 def ali_parser(file):
     sequences={}
     for seq_record in SeqIO.parse(file, "fasta"):
@@ -51,8 +53,8 @@ alignments=[item for item in os.listdir(alidir) if item[-5:]=='fasta']
 device = "cuda" if torch.cuda.is_available() and args.gpu!='' else "cpu"
 print(f'Working with device={device}')
 
-model = AttentionNet(device=device)
-model.load_state_dict(torch.load(args.m),strict=False)
+model = AttentionNet(device=device,n_blocks=6)
+model.load_state_dict(torch.load(args.m),strict=True)
 model.eval()
 tensors={}
 
@@ -69,6 +71,7 @@ for ali in tensors:
     print(f'processing alignment {ali}...')
     counter=0
     seqs=ali_parser(alidir+ali)
+    #seqs={convert(sequence):seqs[sequence] for sequence in seqs}
     configure(model,seqs,device)
     ids=[seq for seq in seqs]
     tensor=tensors[ali][None,:,:]
