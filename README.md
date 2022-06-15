@@ -7,6 +7,21 @@ Fast and accurate Phylogeny estimation with self-attention Networks
 - Bastien Boussau
 - Laurent Jacob
 
+<details><summary>Citation</summary>
+
+```bibtex
+@article{Nesterenko2022phyloformer,
+  author={Nesterenko},
+  title={PHYLOFORMER: FAST AND ACCURATE PHYLOGENY ESTIMATION
+WITH SELF-ATTENTION NETWORKS},
+  year={2022},
+  doi={?},
+  url={?},
+  journal={bioRxiv}
+}
+```
+</details>
+
 ## Project structure
 
 - 
