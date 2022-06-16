@@ -1,4 +1,4 @@
-# Phyloformer: Fast and accurate Phylogeny estimation with self-attention Networks
+# ![](logo.jpg){width=1in} Phyloformer: Fast and accurate Phylogeny estimation with self-attention Networks
 
 ![](sketch.png)
 
