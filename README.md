@@ -30,6 +30,22 @@ WITH SELF-ATTENTION NETWORKS},
 - `LICENSE`: this repository is under the MIT license.
 
 ## Install
+### First, install mamba:
+```
+conda install -n base -c conda-forge mamba
+```
+
+### To install it:
+```
+mamba env create -f environment.yml
+```
+
+### To run it:
+
+
+`conda activate phylo`
+
+### Test run
 
 ## Usage
 
