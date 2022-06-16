@@ -1,6 +1,5 @@
 
-<img src='logo.png', height=134>
-
+![](logo.png){height=134}
 
 # Phyloformer: Fast and accurate Phylogeny estimation with self-attention Networks
 
@@ -53,5 +52,8 @@ mamba env create -f environment.yml
 ## Usage
 
 ## Tests and benchmarking
-The data simulated using seq-gen is available at: git@github.com:lucanest/Phyloformer.git
+The data simulated using seq-gen is available at:
+
+- PAM model: [https://plmbox.math.cnrs.fr/f/5bd0f367da8e4fad8d72/](https://plmbox.math.cnrs.fr/f/5bd0f367da8e4fad8d72/)
+- WAG model: git@github.com:lucanest/Phyloformer.git
 
