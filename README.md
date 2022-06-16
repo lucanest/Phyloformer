@@ -1,4 +1,7 @@
-![](logo.jpg){width=1in}
+
+<img src='logo.png', height=134>
+
+
 # Phyloformer: Fast and accurate Phylogeny estimation with self-attention Networks
 
 ![](sketch.png)
