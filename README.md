@@ -4,7 +4,7 @@
   <img src="https://github.com/lucanest/Phyloformer/blob/main/phyloformer.png">
 </p>
 
-# Phyloformer: Fast and accurate Phylogeny estimation<br/> with self-attention Networks
+# Phyloformer: Towards fast and accurate Phylogeny estimation<br/> with self-attention Networks
 
 - Luca Nesterenko
 - Bastien Boussau
@@ -16,7 +16,7 @@ This repository contains the scripts, data, and plots for [the paper](https://ar
 ```bibtex
 @article{Nesterenko2022phyloformer,
   author={Nesterenko Luca, Boussau Bastien, Jacob Laurent},
-  title={PHYLOFORMER: FAST AND ACCURATE PHYLOGENY ESTIMATION
+  title={PHYLOFORMER: TOWARDS FAST AND ACCURATE PHYLOGENY ESTIMATION
 WITH SELF-ATTENTION NETWORKS},
   year={2022},
   doi={?},
