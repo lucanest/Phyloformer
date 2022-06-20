@@ -1,24 +1,22 @@
 
 
+<p align="center">
+  <img src="https://github.com/lucanest/Phyloformer/blob/main/phyloformer.png">
+</p>
 
-![](logo.png)
-
-# Phyloformer: Fast and accurate Phylogeny estimation<br/> with self-attention Networks
-
-
-![](sketch.png)
+# Phyloformer: Towards fast and accurate Phylogeny estimation<br/> with self-attention Networks
 
 - Luca Nesterenko
 - Bastien Boussau
 - Laurent Jacob
 
-This repository contains the scripts, data, and plots for [the paper](https://arxiv.org/abs/???):
+This repository contains the scripts for [the paper](https://arxiv.org/abs/???):
 
 
 ```bibtex
 @article{Nesterenko2022phyloformer,
   author={Nesterenko Luca, Boussau Bastien, Jacob Laurent},
-  title={PHYLOFORMER: FAST AND ACCURATE PHYLOGENY ESTIMATION
+  title={PHYLOFORMER: TOWARDS FAST AND ACCURATE PHYLOGENY ESTIMATION
 WITH SELF-ATTENTION NETWORKS},
   year={2022},
   doi={?},
@@ -27,12 +25,14 @@ WITH SELF-ATTENTION NETWORKS},
 }
 ```
 
+![](sketch.png)
+
 ## Project structure
 
 - 
 - 
 - 
-- `LICENSE`: this repository is under the MIT license.
+- 
 
 ## Install
 ### First, install mamba:
@@ -55,10 +55,12 @@ mamba env create -f environment.yml
 ## Usage
 
 ## Tests and benchmarking
-The data simulated using seq-gen is available at:
+The data simulated using Seq-Gen is available at:
 
-- PAM model: [https://plmbox.math.cnrs.fr/f/5bd0f367da8e4fad8d72/](https://plmbox.math.cnrs.fr/f/5bd0f367da8e4fad8d72/)
-- WAG model: git@github.com:lucanest/Phyloformer.git
+- PAM model: [https://plmbox.math.cnrs.fr/f/f5a2ed2667a841cba6f0/](https://plmbox.math.cnrs.fr/f/f5a2ed2667a841cba6f0/)
+- WAG model: [https://plmbox.math.cnrs.fr/f/834248a35ba64752a6a4/](https://plmbox.math.cnrs.fr/f/834248a35ba64752a6a4/)
+
+The simulations under the Evosimz model are available at [https://datadryad.org/stash/dataset/doi%253A10.5061%252Fdryad.rbnzs7h91](https://datadryad.org/stash/dataset/doi%253A10.5061%252Fdryad.rbnzs7h91)
 
 ## Disclaimer:
 
