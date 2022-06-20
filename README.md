@@ -1,7 +1,7 @@
 
 
 <p align="center">
-  <src="[phyloformer.png](https://github.com/lucanest/Phyloformer/blob/main/phyloformer.png)">
+  <img src="https://github.com/lucanest/Phyloformer/blob/main/phyloformer.png">
 </p>
 
 # Phyloformer: Fast and accurate Phylogeny estimation<br/> with self-attention Networks
