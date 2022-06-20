@@ -55,7 +55,7 @@ mamba env create -f environment.yml
 ## Usage
 
 ## Tests and benchmarking
-The data simulated using seq-gen is available at:
+The data simulated using Seq-Gen is available at:
 
 - PAM model: [https://plmbox.math.cnrs.fr/f/f5a2ed2667a841cba6f0/](https://plmbox.math.cnrs.fr/f/f5a2ed2667a841cba6f0/)
 - WAG model: [https://plmbox.math.cnrs.fr/f/834248a35ba64752a6a4/](https://plmbox.math.cnrs.fr/f/834248a35ba64752a6a4/)
