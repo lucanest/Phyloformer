@@ -58,7 +58,7 @@ mamba env create -f environment.yml
 The data simulated using seq-gen is available at:
 
 - PAM model: [https://plmbox.math.cnrs.fr/f/5bd0f367da8e4fad8d72/](https://plmbox.math.cnrs.fr/f/5bd0f367da8e4fad8d72/)
-- WAG model: git@github.com:lucanest/Phyloformer.git
+- WAG model: [https://plmbox.math.cnrs.fr/f/834248a35ba64752a6a4/](https://plmbox.math.cnrs.fr/f/834248a35ba64752a6a4/)
 
 ## Disclaimer:
 
