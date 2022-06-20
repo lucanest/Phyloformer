@@ -32,7 +32,7 @@ WITH SELF-ATTENTION NETWORKS},
 - 
 - 
 - 
-- `LICENSE`: this repository is under the MIT license.
+- 
 
 ## Install
 ### First, install mamba:
