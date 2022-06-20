@@ -1,7 +1,7 @@
 
 
 
-![](logo.png)
+![](phyloformer.png)
 
 # Phyloformer: Fast and accurate Phylogeny estimation<br/> with self-attention Networks
 
