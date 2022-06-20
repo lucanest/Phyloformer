@@ -51,6 +51,17 @@ mamba env create -f environment.yml
 `conda activate phylo`
 
 ### Test run
+To check that the installation is successful one can run
+
+```
+python phyloformer/predict.py ./testdata/alignments
+```
+and then 
+```
+python testdata/test.py
+```
+the printed mean normalized Robinson-Fould distance should then be equal to 0.063
+
 
 ## Usage
 
