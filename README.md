@@ -6,9 +6,6 @@
 
 # Phyloformer: Fast and accurate Phylogeny estimation<br/> with self-attention Networks
 
-
-![](sketch.png)
-
 - Luca Nesterenko
 - Bastien Boussau
 - Laurent Jacob
@@ -27,6 +24,8 @@ WITH SELF-ATTENTION NETWORKS},
   journal={bioRxiv}
 }
 ```
+
+![](sketch.png)
 
 ## Project structure
 
