@@ -60,10 +60,10 @@ the printed mean normalized Robinson-Fould distance should be equal to 0.063.
 ## Tests and benchmarking
 The data simulated using Seq-Gen is available at:
 
-- PAM model: [https://plmbox.math.cnrs.fr/f/f5a2ed2667a841cba6f0/](https://plmbox.math.cnrs.fr/f/f5a2ed2667a841cba6f0/)
-- WAG model: [https://plmbox.math.cnrs.fr/f/834248a35ba64752a6a4/](https://plmbox.math.cnrs.fr/f/834248a35ba64752a6a4/)
+- PAM model: [https://plmbox.math.cnrs.fr/f/f5a2ed2667a841cba6f0/](https://plmbox.math.cnrs.fr/f/f5a2ed2667a841cba6f0/).
+- WAG model: [https://plmbox.math.cnrs.fr/f/834248a35ba64752a6a4/](https://plmbox.math.cnrs.fr/f/834248a35ba64752a6a4/).
 
-The simulations under the Evosimz model are available at [https://datadryad.org/stash/dataset/doi%253A10.5061%252Fdryad.rbnzs7h91](https://datadryad.org/stash/dataset/doi%253A10.5061%252Fdryad.rbnzs7h91)
+The simulations under the Evosimz model are available at [https://datadryad.org/stash/dataset/doi%253A10.5061%252Fdryad.rbnzs7h91](https://datadryad.org/stash/dataset/doi%253A10.5061%252Fdryad.rbnzs7h91).
 
 ## Disclaimer:
 
@@ -77,7 +77,7 @@ particular, we observed lower performances:
 - For topologies generated under a birth-death model. The topologies
   used in the experiments reported in the manuscript were generated
   under the populate function of the ete3 package. We are still
-  investigating the possible cause of the reasons of this discrepancy.
+  investigating the possible reasons for this discrepancy.
 
 We are making the trained models available for transparency and would
 be very interested to hear about cases where these models
