@@ -27,13 +27,6 @@ WITH SELF-ATTENTION NETWORKS},
 
 ![](sketch.png)
 
-## Project structure
-
-- 
-- 
-- 
-- 
-
 ## Install
 ### First, install mamba:
 ```
@@ -46,7 +39,6 @@ mamba env create -f environment.yml
 ```
 
 ### To run it:
-
 
 `conda activate phylo`
 
