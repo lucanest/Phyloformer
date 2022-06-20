@@ -60,7 +60,7 @@ and then
 ```
 python testdata/test.py
 ```
-the printed mean normalized Robinson-Fould distance should then be equal to 0.063
+the printed mean normalized Robinson-Fould distance should be equal to 0.063.
 
 
 ## Usage
