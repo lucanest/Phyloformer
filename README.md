@@ -29,7 +29,7 @@ WITH SELF-ATTENTION NETWORKS},
 
 ## Install
 The easiest way to install the software is using mamba:
-### First, install mamba:
+
 ```
 conda install -n base -c conda-forge mamba
 mamba env create -f environment.yml
