@@ -57,6 +57,15 @@ the printed mean normalized Robinson-Fould distance should be equal to 0.063.
 
 ## Usage
 
+We provide the software as a ready to use tool for phylogenetic inference, one can simply run
+```
+python phyloformer/predict.py
+```
+providing as argument a directory containing multiple sequence protein alignments in .fasta format,
+the program will then predict a phylogenetic tree for each alignment and write them in Newick format in the same directory.
+If the user wishes to choose a different directory where the predictions will be saved he can specify it with the `--o` flag.
+By default the Phyloformer model used for inference is the one trained on simulations based on the PAM model of evolution, a different model to use can be specified with the `--m` flag (the other one currently available being the one trained on [evosimz](https://gitlab.com/ztzou/phydl/-/tree/master/evosimz) simulations).
+
 ## Tests and benchmarking
 The data simulated using Seq-Gen is available at:
 
