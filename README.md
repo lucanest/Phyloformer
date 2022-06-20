@@ -68,6 +68,7 @@ If the user wishes to choose a different directory where the predictions will be
 
 By default the Phyloformer model used for inference is the one trained on simulations based on the PAM model of evolution, a different model to use can be specified with the `--m` flag (the other one currently available being the one trained on [evosimz](https://gitlab.com/ztzou/phydl/-/tree/master/evosimz) simulations).
 
+Finally, if an NVIDIA gpu is available, `--gpu true` allows to exploit it offering a great speed up in inference.
 ## Tests and benchmarking
 The data simulated using Seq-Gen is available at:
 
