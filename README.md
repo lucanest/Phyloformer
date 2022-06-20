@@ -28,19 +28,13 @@ WITH SELF-ATTENTION NETWORKS},
 ![](sketch.png)
 
 ## Install
+The easiest way to install the software is using mamba:
 ### First, install mamba:
 ```
 conda install -n base -c conda-forge mamba
-```
-
-### To install it:
-```
 mamba env create -f environment.yml
+conda activate phylo
 ```
-
-### To run it:
-
-`conda activate phylo`
 
 ### Test run
 To check that the installation is successful one can run
