@@ -1,12 +1,10 @@
 
 
-
-![](logo.png)
+<p align="center">
+  <img src="https://github.com/lucanest/Phyloformer/blob/main/phyloformer.png">
+</p>
 
 # Phyloformer: Fast and accurate Phylogeny estimation<br/> with self-attention Networks
-
-
-![](sketch.png)
 
 - Luca Nesterenko
 - Bastien Boussau
@@ -26,6 +24,8 @@ WITH SELF-ATTENTION NETWORKS},
   journal={bioRxiv}
 }
 ```
+
+![](sketch.png)
 
 ## Project structure
 
