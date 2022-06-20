@@ -13,4 +13,4 @@ for tree in true_trees:
     t1=Tree(os.path.join(trues,tree))
     t2=Tree(os.path.join(preds,'predicted_'+tree))
     RFs.append(t1.compare(t2,unrooted=True)['norm_rf'])
-print(f'Mean normalized Robinson-Foulds distance between true and predicted trees: {np.mean(RFs)}')
+print(f'Mean normalized Robinson-Foulds distance between true and predicted trees: {np.mean(RFs):.3f}')
