@@ -66,11 +66,11 @@ the program will then predict a phylogenetic tree for each alignment and write t
 
 If the user wishes to choose a different directory where the predictions will be saved he can specify it with the `--o` flag.
 
-By default the Phyloformer model used for inference is the one trained on simulations based on the PAM model of evolution, a different model to use can be specified with the `--m` flag (the other one currently available being the one trained on [evosimz](https://gitlab.com/ztzou/phydl/-/tree/master/evosimz) simulations).
+By default the Phyloformer model used for inference is the one trained on simulations based on the PAM model of evolution, a different model to use can be specified with the `--m` flag (the other one currently available being the one trained on [Evosimz](https://gitlab.com/ztzou/phydl/-/tree/master/evosimz) simulations).
 
 Finally, if an NVIDIA gpu is available, `--gpu true` allows to exploit it offering a great speed up in inference.
-## Tests and benchmarking
-The data simulated using Seq-Gen is available at:
+## Reproducibility of the results in the paper
+The datasets simulated using Seq-Gen are available at:
 
 - PAM model: [https://plmbox.math.cnrs.fr/f/f5a2ed2667a841cba6f0/](https://plmbox.math.cnrs.fr/f/f5a2ed2667a841cba6f0/).
 - WAG model: [https://plmbox.math.cnrs.fr/f/834248a35ba64752a6a4/](https://plmbox.math.cnrs.fr/f/834248a35ba64752a6a4/).
