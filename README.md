@@ -16,11 +16,10 @@ This repository contains the scripts for [the paper](https://arxiv.org/abs/???):
 ```bibtex
 @article{Nesterenko2022phyloformer,
   author={Nesterenko Luca, Boussau Bastien, Jacob Laurent},
-  title={PHYLOFORMER: TOWARDS FAST AND ACCURATE PHYLOGENY ESTIMATION
-WITH SELF-ATTENTION NETWORKS},
+  title={Phyloformer: towards fast and accurate phylogeny estimation with self-attention networks},
   year={2022},
-  doi={?},
-  url={?},
+  doi={https://doi.org/10.1101/2022.06.24.496975},
+  url={https://www.biorxiv.org/content/10.1101/2022.06.24.496975v1},
   journal={bioRxiv}
 }
 ```
