@@ -10,7 +10,7 @@
 - Bastien Boussau
 - Laurent Jacob
 
-This repository contains the scripts for [the paper](https://arxiv.org/abs/???):
+This repository contains the scripts for [the paper](https://www.biorxiv.org/content/10.1101/2022.06.24.496975v1):
 
 
 ```bibtex
