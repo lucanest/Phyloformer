@@ -1,7 +1,7 @@
 
 
 <p align="center">
-  <img src="https://github.com/lucanest/Phyloformer/blob/main/phyloformer.png">
+  <img src="https://github.com/lucanest/Phyloformer/blob/main/figures/phyloformer.png">
 </p>
 
 # Phyloformer: Towards fast and accurate Phylogeny estimation<br/> with self-attention Networks
@@ -24,7 +24,7 @@ This repository contains the scripts for [the paper](https://arxiv.org/abs/???):
 }
 ```
 
-![](sketch.png)
+![](figures/sketch.png)
 
 ## Install
 The easiest way to install the software is using mamba:
