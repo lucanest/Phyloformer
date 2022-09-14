@@ -66,9 +66,35 @@ Finally, if an NVIDIA gpu is available, `--gpu true` allows to exploit it offeri
 ## Simulation and training
 
 To train the network one needs to simulate phylogenetic trees and alignments of sequences evolving along them.
-The trees can be generate with
+
+### Simulating the trees
+The trees can be generated with
 ```
 python simulations/simulateTrees.py --nleaves <number of leaves in each tree> (default 20) --ntrees <number of trees> --type <tree topology> (default uniform) --o <output directory> --bl <branch lenght distribution> (default uniform)
+```
+The currently supported types of tree topologies are uniform (as in the paper, sampling uniformly from the tree topologies having nleaves), and birth-death (the tree is generated through a birth death process with a birth_rate of 1 and a death_rate of 0.5).
+
+The currently supported types of branch length distribution are uniform (as in the paper, branch lenghts sampled uniformly between 0.002 and 1), and
+exponential (branch lenghts sampled from an exponential distribution with a $\lambda$ parameter of 0.15)
+
+Therefore to train the network just as in the paper one can create the tree dataset simply with
+```
+python simulations/simulateTrees.py --ntrees 100000 --o <output directory>
+```
+### Simulating the alignments
+Currently the supported sequence simulator is [Seq-Gen](http://tree.bio.ed.ac.uk/software/seqgen/)
+
+The alignments can be generated with
+```
+python simulations/simulateTrees.py --i <input directory with the .nwk tree files>  --o <output directory> --l <length of the simulated sequences> (default 200) --sg <path to Seq-Gen-1.3.4/source/> --m <model of evolution> (default PAM)
+```
+
+the possible models of evolution being those supported by Seq-Gen.
+
+Again, to follow the paper one can just do
+
+```
+python simulations/simulateTrees.py --i <input directory with the .nwk tree files>  --o <output directory> --sg <path to Seq-Gen-1.3.4/source/>
 ```
 
 ## Reproducibility of the results in the paper
