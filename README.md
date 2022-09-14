@@ -97,7 +97,6 @@ Again, to follow the paper one can just do
 python simulations/simulateTrees.py --i <input directory with the .nwk tree files>  --o <output directory> --sg <path to Seq-Gen-1.3.4/source/>
 ```
 ### Creating a tensor dataset
-Simply run 
 ```
 python training/make_tensors.py --treedir <input directory with the .nwk tree files> --alidir <input directory with the corresponding .fasta alignment files>  --o <output directory> 
 ```
