@@ -34,20 +34,20 @@ def to_array(seq):
 def main():
     
     parser = argparse.ArgumentParser()    
-    parser.add_argument('treedir',type=str,help='path to input directory containing the .tree tree files')
-    parser.add_argument('alidir', type=str, help='path to input directory containing corresponding .fasta alignments')
-    parser.add_argument('outdir', type=str, help='path to output directory')
+    parser.add_argument('--treedir',type=str,help='path to input directory containing the .nwk tree files')
+    parser.add_argument('--alidir', type=str, help='path to input directory containing corresponding .fasta alignments')
+    parser.add_argument('--o', type=str, help='path to output directory')
     args = parser.parse_args()
 
     tree_path = args.treedir
     ali_path=args.alidir
-    out_path = args.outdir
+    out_path = args.o
 
-    trees=[item[:-5] for item in os.listdir(tree_path) if item[-4:]=='tree']
-    
+    trees=[item[:-4] for item in os.listdir(tree_path) if item[-4:]=='.nwk']
+
     for tree in trees:
 
-        t=Tree(os.path.join(tree_path,tree+'.tree'))
+        t=Tree(os.path.join(tree_path,tree+'.nwk'))
         alignment=os.path.join(ali_path,tree+'.fasta')
 
         print(f'Processing {tree}')
