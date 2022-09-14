@@ -75,6 +75,11 @@ The currently supported types of tree topologies are uniform (as in the paper, s
 The currently supported types of branch length distribution are uniform (as in the paper, branch lenghts sampled uniformly between 0.002 and 1), and
 exponential (branch lenghts sampled from an exponential distribution with a $\lambda$ parameter of 0.15)
 
+Therefore to train the network just as in the paper one can create the tree dataset simply with
+```
+python simulations/simulateTrees.py --nleaves  --ntrees 100000 --o <output directory>
+```
+
 ## Reproducibility of the results in the paper
 The datasets simulated using Seq-Gen are available at:
 
