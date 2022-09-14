@@ -83,10 +83,20 @@ python simulations/simulateTrees.py --ntrees 100000 --o <output directory>
 ```
 ### Simulating the alignments
 Currently the supported sequence simulator is [Seq-Gen](http://tree.bio.ed.ac.uk/software/seqgen/)
-The alignments can be generate with
+
+The alignments can be generated with
 ```
-python simulations/simulateTrees.py --nleaves <number of leaves in each tree> (default 20) --ntrees <number of trees> --type <tree topology> (default uniform) --o <output directory> --bl <branch lenght distribution> (default uniform)
+python simulations/simulateTrees.py --i <input directory with the .nwk tree files>  --o <output directory> --l <length of the simulated sequences> (default 200) --o <output directory> --sg <path to Seq-Gen-1.3.4/source/> --m <model of evolution> (default PAM)
 ```
+
+the possible models of evolution being those supported by Seq-Gen.
+
+Again, to follow the paper one can just do
+
+```
+python simulations/simulateTrees.py --i <input directory with the .nwk tree files>  --o <output directory>  --o <output directory> --sg <path to Seq-Gen-1.3.4/source/>
+```
+
 ## Reproducibility of the results in the paper
 The datasets simulated using Seq-Gen are available at:
 
