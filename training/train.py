@@ -1,9 +1,8 @@
 import torch
 import torch.nn as nn
-import os, random
+import os, sys, random
 import argparse
 import numpy as np
-import matplotlib.pyplot as plt
 import json
 import copy
 import math
@@ -11,15 +10,10 @@ import sys
 sys.path.insert(0,"..")
 from phyloformer.phyloformer import AttentionNet
 from torch.cuda.amp import autocast, GradScaler
-#from phyloformer import AttentionNet
-from torch.nn import functional as F
-from torch.nn.modules.batchnorm import BatchNorm1d
-from torch.nn.modules.dropout import Dropout
 from torch.utils.data import Dataset, DataLoader
 from scipy.special import binom
 from time import time
-from torch._C import device
-from numpy.core.fromnumeric import shape
+from operator import itemgetter
 
 Strip=lambda string,chars: Strip(string.replace(chars[0],""),chars[1:]) if len(chars)>0 else string
 
@@ -85,7 +79,6 @@ def main():
     batch_size,epochs,lr, opt,loss,n_blocks,n_folds= hyperparameters.values()
 
     ID=Strip(str(hyperparameters),":{}, '")+Label
-    out_dir=os.path.join(out_dir,ID)
     os.mkdir(out_dir)
 
     data=list({item[1:] for item in os.listdir(in_dir) if item[1]=='_'})
@@ -103,12 +96,6 @@ def main():
     
     # -------------------------------------------------------------------------- # 
     
-    t_losses=[]
-    v_losses=[]
-    v_MAEs=[]
-    v_MREs=[]
-
-
     def train(net,num_epochs,verbose=True):
         if device=='cuda':
             scaler = GradScaler()
@@ -124,7 +111,7 @@ def main():
                 x_train, y_train = batch
                 inputs=x_train.float()
 
-                if device=='cuda': #MIXED PRECISION
+                if device=='cuda': #Automatic mixed precision
                     with autocast():
                         optimizer.zero_grad()
                         outputs,a_maps=net(inputs)
@@ -164,7 +151,7 @@ def main():
    
                     net.eval()
                     inputs=x_test.float()
-                    if device=='cuda': #MIXED PRECISION
+                    if device=='cuda': #Automatic mixed precision
                         with autocast():
                             outputs,a_maps=net(inputs)  
                             y_test=y_test.type_as(outputs)
@@ -208,7 +195,14 @@ def main():
                     bestloss=val_loss
                     print(f'best val loss {val_loss} at epoch {epoch+1}')
                     bestmodel=copy.deepcopy(net)
-                    torch.save(bestmodel,out_dir+'/Model'+ID+'fold'+str(fold+1)+Label+'best.pt') 
+                    torch.save({'state_dict':bestmodel.state_dict(),
+                    'optimizer_state_dict':optimizer.state_dict(),
+                    'hyperparameters':hyperparameters,
+                    'val_losses':v_losses,
+                    'train_losses':t_losses,
+                    'val_maes':v_MAEs,
+                    'val_mres':v_MREs},
+                    out_dir+'/Model'+ID+'fold'+str(fold+1)+Label+'best.pt')
 
                 else:
                     counter+=1    
@@ -224,15 +218,13 @@ def main():
 
     nets,bestnets=[],[]
 
-    
     for fold in range(n_folds):
         print(f'Fold {fold +1}:\n')
         fold_time=time()
 
         # Create the dataloaders
-
         test_dataset=TensorDataset(kfold(data,fold,l)[0],in_dir,device)
-        train_loader=DataLoader(dataset=TensorDataset(kfold(data,fold,l)[1],in_dir,device), batch_size=batch_size, shuffle=True,num_workers=0)
+        train_loader=DataLoader(dataset=TensorDataset(kfold(data,fold,l)[1],in_dir,device), batch_size=batch_size, shuffle=True)
         test_loader=DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
 
         i_time=time()
@@ -244,13 +236,16 @@ def main():
         nb_pairs=int(binom(nb_seq,2))
 
         net = AttentionNet(seq_len=seq_len,nb_seq=nb_seq,n_blocks=n_blocks,device=device).float().to(device)
-        #print(summary(net,x_test.shape))
         
+        if len(load)>0:
+            L=torch.load(load)
+            net.load_state_dict(L['state_dict'],strict=True)
+
         nets.append(net)
         criterion = nn.MSELoss()
         MAE= nn.L1Loss()
         MRE= lambda x,y: torch.mean(torch.abs(x-y)/x).item()
-
+    
         if opt == 'Adam':
             optimizer = torch.optim.Adam(nets[fold].parameters(),lr=lr)
         elif opt == 'SGD':
@@ -258,6 +253,15 @@ def main():
         else:
             raise ValueError('Please specify either Adam or SGD as optimizer')
         
+        if len(load)>0:
+            optimizer.load_state_dict(L['optimizer_state_dict'])
+
+        if len(load)>0:
+            t_losses, v_losses, v_MAEs, v_MREs=itemgetter('train_losses', 'val_losses', 'val_maes', 'val_mres')(L)
+
+        else: 
+            t_losses, v_losses, v_MAEs, v_MREs = ([] for i in range(4))
+
         #Learning rate schedule
         scheduler=torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer,factor=0.5,patience=5,verbose=True)
 
@@ -266,13 +270,19 @@ def main():
         bestnets.append(bestnet)
 
         print('\nThe fold took {:.3f} seconds\n'.format(time()-fold_time))
-    #Save the hyperparameters with which the model has been trained so far
-    #bestnets[fold].train_history.append(hyperparameters)
-    #nets[fold].train_history.append(hyperparameters)
+   
 
     #Save the models
     for i,net in enumerate(nets):
-        torch.save(net,out_dir+'/Model'+ID+'fold'+str(i+1)+Label+'.pt')
+        torch.save(net.state_dict(),out_dir+'/Model'+ID+'fold'+str(i+1)+Label+'.pt')
+        torch.save({'state_dict':net.state_dict(),
+        'optimizer_state_dict':optimizer.state_dict(),
+        'hyperparameters':hyperparameters,
+        'val_losses':v_losses,
+        'train_losses':t_losses,
+        'val_maes':v_MAEs,
+        'val_mres':v_MREs},
+        out_dir+'/Model'+ID+'fold'+str(fold+1)+Label+'.pt')
 
     print(f'total elapsed time: {time()-start_time} seconds')
 

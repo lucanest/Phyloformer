@@ -1,1 +1,1 @@
-{"Bs": 6, "Epchs": 7, "Lr": 0.00039, "Opt": "Adam", "loss": "L2", "blocks":3, "folds":2}
+{"Bs": 8, "Epchs": 35, "Lr": 0.00039, "Opt": "Adam", "loss": "L2", "blocks":3, "folds":1}
