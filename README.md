@@ -66,7 +66,9 @@ Finally, if an NVIDIA gpu is available, `--gpu true` allows to exploit it offeri
 ## Simulation and training
 
 To train the network one needs to simulate phylogenetic trees and alignments of sequences evolving along them.
-The trees can be generate with
+
+### Simulating the trees
+The trees can be generated with
 ```
 python simulations/simulateTrees.py --nleaves <number of leaves in each tree> (default 20) --ntrees <number of trees> --type <tree topology> (default uniform) --o <output directory> --bl <branch lenght distribution> (default uniform)
 ```
@@ -77,9 +79,14 @@ exponential (branch lenghts sampled from an exponential distribution with a $\la
 
 Therefore to train the network just as in the paper one can create the tree dataset simply with
 ```
-python simulations/simulateTrees.py --nleaves  --ntrees 100000 --o <output directory>
+python simulations/simulateTrees.py --ntrees 100000 --o <output directory>
 ```
-
+### Simulating the alignments
+Currently the supported sequence simulator is [Seq-Gen](http://tree.bio.ed.ac.uk/software/seqgen/)
+The alignments can be generate with
+```
+python simulations/simulateTrees.py --nleaves <number of leaves in each tree> (default 20) --ntrees <number of trees> --type <tree topology> (default uniform) --o <output directory> --bl <branch lenght distribution> (default uniform)
+```
 ## Reproducibility of the results in the paper
 The datasets simulated using Seq-Gen are available at:
 
