@@ -79,7 +79,9 @@ def main():
     batch_size,epochs,lr, opt,loss,n_blocks,n_folds= hyperparameters.values()
 
     ID=Strip(str(hyperparameters),":{}, '")+Label
-    os.mkdir(out_dir)
+
+    if not os.path.exists(out_dir):
+        os.mkdir(out_dir)
 
     data=list({item[1:] for item in os.listdir(in_dir) if item[1]=='_'})
 
