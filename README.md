@@ -86,7 +86,7 @@ Currently the supported sequence simulator is [Seq-Gen](http://tree.bio.ed.ac.uk
 
 The alignments can be generated with
 ```
-python simulations/simulateTrees.py --i <input directory with the .nwk tree files>  --o <output directory> --l <length of the simulated sequences> (default 200) --o <output directory> --sg <path to Seq-Gen-1.3.4/source/> --m <model of evolution> (default PAM)
+python simulations/simulateTrees.py --i <input directory with the .nwk tree files>  --o <output directory> --l <length of the simulated sequences> (default 200) --sg <path to Seq-Gen-1.3.4/source/> --m <model of evolution> (default PAM)
 ```
 
 the possible models of evolution being those supported by Seq-Gen.
@@ -94,7 +94,7 @@ the possible models of evolution being those supported by Seq-Gen.
 Again, to follow the paper one can just do
 
 ```
-python simulations/simulateTrees.py --i <input directory with the .nwk tree files>  --o <output directory>  --o <output directory> --sg <path to Seq-Gen-1.3.4/source/>
+python simulations/simulateTrees.py --i <input directory with the .nwk tree files>  --o <output directory> --sg <path to Seq-Gen-1.3.4/source/>
 ```
 
 ## Reproducibility of the results in the paper
