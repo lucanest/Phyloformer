@@ -47,10 +47,10 @@ def main():
     print('pytorch version', torch.__version__)
 
     parser = argparse.ArgumentParser()    
-    parser.add_argument('indir', type=str, help='/path/ to input directory containing the\
+    parser.add_argument('--i', type=str, help='/path/ to input directory containing the\
     the .pt tensors on which the model will be trained')
-    parser.add_argument('config', type=str, help='/path/ to the configuration json file for the hyperparameters')
-    parser.add_argument('outdir', type=str, help='/path/ to output directory where the model parameters\
+    parser.add_argument('--c', type=str, help='/path/ to the configuration json file for the hyperparameters')
+    parser.add_argument('--o', type=str, help='/path/ to output directory where the model parameters\
         and the metrics will be saved') 
     parser.add_argument('--label', default="", type=str, help='Label for the saved models/plots') 
     parser.add_argument('--load', default="", type=str, help='Load model parameters to train it further')        
