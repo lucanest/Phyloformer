@@ -43,7 +43,7 @@ for i in range(numtrees):
             pass
         else:
             if bl=='uniform':
-                node.dist = np.random.uniform(low=0.005, high=1.0, size=None)
+                node.dist = np.random.uniform(low=0.002, high=1.0, size=None)
             elif bl=='exponential':
                 node.dist = np.random.exponential(0.15, size=None)
             else:
