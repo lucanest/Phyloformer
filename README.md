@@ -62,6 +62,15 @@ If the user wishes to choose a different directory where the predictions will be
 By default the Phyloformer model used for inference is the one trained on simulations based on the PAM model of evolution, a different model to use can be specified with the `--m` flag (the other one currently available being the one trained on [Evosimz](https://gitlab.com/ztzou/phydl/-/tree/master/evosimz) simulations).
 
 Finally, if an NVIDIA gpu is available, `--gpu true` allows to exploit it offering a great speed up in inference.
+
+## Simulation and training
+
+To train the network one needs to simulate phylogenetic trees and alignments of sequences evolving along them.
+The trees can be generate with
+```
+python simulations/simulateTrees.py --nleaves <number of leaves in each tree> (default 20) --ntrees <number of trees> --type <tree topology> (default uniform) --o <output directory> --bl <branch lenght distribution> (default uniform)
+```
+
 ## Reproducibility of the results in the paper
 The datasets simulated using Seq-Gen are available at:
 
