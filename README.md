@@ -72,7 +72,7 @@ python simulations/simulateTrees.py --nleaves <number of leaves in each tree> (d
 ```
 The currently supported types of tree topologies are uniform (as in the paper, sampling uniformly from the tree topologies having nleaves), and birth-death (the tree is generated through a birth death process with a birth_rate of 1 and a death_rate of 0.5).
 The currently supported types of branch length distribution are uniform (as in the paper, branch lenghts sampled uniformly between 0.002 and 1), and
-exponential (branch lenghts sampled from an exponential distribution with a $lambda$ parameter of 0.15)
+exponential (branch lenghts sampled from an exponential distribution with a $\lambda$ parameter of 0.15)
 
 ## Reproducibility of the results in the paper
 The datasets simulated using Seq-Gen are available at:
