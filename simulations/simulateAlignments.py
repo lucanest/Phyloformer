@@ -19,7 +19,7 @@ def main():
     model = args.m
 
     trees=[item[:-4] for item in os.listdir(in_dir) if item[-4:]=='.nwk']
-        
+    
     for tree in trees:
         in_path=os.path.join(in_dir,tree+'.nwk')
         out_path= out_dir+tree+'.fasta'
