@@ -52,13 +52,11 @@ def main():
     parser.add_argument('--c', type=str, help='/path/ to the configuration json file for the hyperparameters')
     parser.add_argument('--o', type=str, help='/path/ to output directory where the model parameters\
         and the metrics will be saved') 
-    parser.add_argument('--label', default="", type=str, help='Label for the saved models/plots') 
     parser.add_argument('--load', default="", type=str, help='Load model parameters to train it further')        
     args=parser.parse_args()
 
     in_dir=args.indir   
     out_dir=args.outdir
-    Label=args.label
     config=args.config
     load=args.load
 
@@ -78,7 +76,7 @@ def main():
     print(f'hyperparameters={hyperparameters}')
     batch_size,epochs,lr, opt,loss,n_blocks,n_folds= hyperparameters.values()
 
-    ID=Strip(str(hyperparameters),":{}, '")+Label
+    ID=Strip(str(hyperparameters),":{}, '")
 
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
@@ -204,7 +202,7 @@ def main():
                     'train_losses':t_losses,
                     'val_maes':v_MAEs,
                     'val_mres':v_MREs},
-                    out_dir+'/Model'+ID+'fold'+str(fold+1)+Label+'best.pt')
+                    out_dir+'/Model'+ID+'fold'+str(fold+1)+'best.pt')
 
                 else:
                     counter+=1    
@@ -276,7 +274,7 @@ def main():
 
     #Save the models
     for i,net in enumerate(nets):
-        torch.save(net.state_dict(),out_dir+'/Model'+ID+'fold'+str(i+1)+Label+'.pt')
+        torch.save(net.state_dict(),out_dir+'/Model'+ID+'fold'+str(i+1)+'.pt')
         torch.save({'state_dict':net.state_dict(),
         'optimizer_state_dict':optimizer.state_dict(),
         'hyperparameters':hyperparameters,
@@ -284,7 +282,7 @@ def main():
         'train_losses':t_losses,
         'val_maes':v_MAEs,
         'val_mres':v_MREs},
-        out_dir+'/Model'+ID+'fold'+str(fold+1)+Label+'.pt')
+        out_dir+'/Model'+ID+'fold'+str(fold+1)+'.pt')
 
     print(f'total elapsed time: {time()-start_time} seconds')
 
