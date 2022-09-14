@@ -63,7 +63,7 @@ By default the Phyloformer model used for inference is the one trained on simula
 
 Finally, if an NVIDIA gpu is available, `--gpu true` allows to exploit it offering a great speed up in inference.
 
-## Simulation and training
+## Simulations and training
 
 To train the network one needs to simulate phylogenetic trees and alignments of sequences evolving along them.
 
@@ -96,7 +96,16 @@ Again, to follow the paper one can just do
 ```
 python simulations/simulateTrees.py --i <input directory with the .nwk tree files>  --o <output directory> --sg <path to Seq-Gen-1.3.4/source/>
 ```
-
+### Creating a tensor dataset
+Simply run 
+```
+python training/make_tensors.py --treedir <input directory with the .nwk tree files> --alidir <input directory with the corresponding .fasta alignment files>  --o <output directory> 
+```
+### Training the model
+```
+python training/train.py --i <input directory with the training tensors> --o <output directory where the models will be saved>  --c <json configuration file with hyperparameters>  --load (optional) <path to model to train further>
+```
+In the training directory one will find an example of configuration file, stdconfig.json, i.e. the one used to train the model in the paper.
 ## Reproducibility of the results in the paper
 The datasets simulated using Seq-Gen are available at:
 
