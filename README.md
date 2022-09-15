@@ -4,7 +4,7 @@
   <img src="https://github.com/lucanest/Phyloformer/blob/main/figures/phyloformer_color.png">
 </p>
 
-# Phyloformer: Towards fast and accurate Phylogeny estimation<br/> with self-attention Networks
+# Phyloformer: Towards fast and accurate Phylogeny estimation with self-attention Networks
 
 - Luca Nesterenko
 - Bastien Boussau
