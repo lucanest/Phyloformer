@@ -55,9 +55,9 @@ def main():
     parser.add_argument('--load', default="", type=str, help='Load model parameters to train it further')        
     args=parser.parse_args()
 
-    in_dir=args.indir   
-    out_dir=args.outdir
-    config=args.config
+    in_dir=args.i   
+    out_dir=args.o
+    config=args.c
     load=args.load
 
     i_time=time()
