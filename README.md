@@ -39,7 +39,7 @@ conda activate phylo
 To check that the installation is successful one can run
 
 ```
-python phyloformer/predict.py ./testdata/alignments
+python predict.py testdata/alignments
 ```
 and then 
 ```
@@ -52,7 +52,7 @@ the printed mean normalized Robinson-Fould distance should be equal to 0.063.
 
 We provide the software as a ready to use tool for phylogenetic inference, one can simply run
 ```
-python phyloformer/predict.py
+python predict.py
 ```
 providing as argument a directory containing multiple sequence protein alignments in .fasta format,
 the program will then predict a phylogenetic tree for each alignment and write them in Newick format in the same directory.
@@ -86,7 +86,7 @@ Currently the supported sequence simulator is [Seq-Gen](http://tree.bio.ed.ac.uk
 
 The alignments can be generated with
 ```
-python simulations/simulateTrees.py --i <input directory with the .nwk tree files>  --o <output directory> --l <length of the simulated sequences> (default 200) --sg <path to Seq-Gen-1.3.4/source/> --m <model of evolution> (default PAM)
+python simulations/simulateAlignments.py --i <input directory with the .nwk tree files>  --o <output directory> --l <length of the simulated sequences> (default 200) --sg <path to Seq-Gen-1.3.4/source/> --m <model of evolution> (default PAM)
 ```
 
 the possible models of evolution being those supported by Seq-Gen.
