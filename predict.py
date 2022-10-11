@@ -19,21 +19,22 @@ def ali_parser(file):
     return sequences
 def to_array(seq):
     return np.array([(amino_acids==aa).astype(int) for aa in seq])
-def configure(net,seqs,device):
+def configure(model,seqs,device):
     nb_seq=len(seqs)
     seq_len=len(list(seqs.values())[0])
     nb_pairs=int(binom(nb_seq,2))
-    net.nb_seq=nb_seq
-    net.seq_len=seq_len
-    net.nb_pairs=nb_pairs
+    model.nb_seq=nb_seq
+    model.seq_len=seq_len
+    model.nb_pairs=nb_pairs
     seq2pair = torch.zeros(nb_pairs, nb_seq)
     k = 0
-    for i in range(net.nb_seq):
-        for j in range(i+1, net.nb_seq):
+    for i in range(model.nb_seq):
+        for j in range(i+1, model.nb_seq):
             seq2pair[k, i] = 1
             seq2pair[k, j] = 1
             k = k+1
-    net.seq2pair=seq2pair.to(device)
+    model.seq2pair=seq2pair.to(device)
+    del seq2pair
 
 scriptdir=os.path.dirname(os.path.realpath(__file__))
 parser = argparse.ArgumentParser()
@@ -70,7 +71,8 @@ for ali in tensors:
     print(f'processing alignment {ali}...')
     counter=0
     seqs=ali_parser(alidir+ali)
-    configure(model,seqs,device)
+    if len(seqs)!=model.nb_seq:
+        configure(model,seqs,device)
     ids=[seq for seq in seqs]
     tensor=tensors[ali][None,:,:]
     y_pred = model(tensor.float())[0]
