@@ -7,7 +7,7 @@ import gc
 from ete3 import Tree
 from Bio import SeqIO
 from scipy.special import binom
-from phyloformer import AttentionNet
+from phyloformer.phyloformer import AttentionNet
 
 amino_acids = np.array(['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H',
  'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'X', '-'])

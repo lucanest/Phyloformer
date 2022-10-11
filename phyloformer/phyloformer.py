@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from scipy.special import binom
-from phyloformer.attentions import KernelAxialMultiAttention
+from attentions import KernelAxialMultiAttention
 
 class AttentionNet(nn.Module):
     '''Phyloformer Network'''     
