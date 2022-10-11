@@ -39,7 +39,7 @@ conda activate phylo
 To check that the installation is successful one can run
 
 ```
-python phyloformer/predict.py ./testdata/alignments
+python predict.py testdata/alignments
 ```
 and then 
 ```
@@ -52,7 +52,7 @@ the printed mean normalized Robinson-Fould distance should be equal to 0.063.
 
 We provide the software as a ready to use tool for phylogenetic inference, one can simply run
 ```
-python phyloformer/predict.py
+python predict.py
 ```
 providing as argument a directory containing multiple sequence protein alignments in .fasta format,
 the program will then predict a phylogenetic tree for each alignment and write them in Newick format in the same directory.
