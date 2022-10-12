@@ -26,6 +26,7 @@ def configure(model,seqs,device):
     nb_pairs=int(binom(nb_seq,2))
     model.nb_seq=nb_seq
     model.seq_len=seq_len
+    model.nb_pairs=nb_pairs
     seq2pair=torch.zeros(nb_pairs, nb_seq)
     k=0
     for i in range(model.nb_seq):
