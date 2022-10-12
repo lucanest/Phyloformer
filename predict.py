@@ -60,6 +60,7 @@ for k,v in state_dict.items():
     name=k.replace("module.", "")  #remove "module." for models trained on multiple gpus
     new_state_dict[name]=v
 model.load_state_dict(new_state_dict,strict=True)
+model.to(device)
 model.eval()
 tensors={}
 
