@@ -8,6 +8,7 @@ from ete3 import Tree
 from Bio import SeqIO
 from scipy.special import binom
 from phyloformer.phyloformer import AttentionNet
+from collections import OrderedDict
 
 amino_acids = np.array(['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H',
  'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'X', '-'])
@@ -24,10 +25,9 @@ def configure(model,seqs,device):
     seq_len=len(list(seqs.values())[0])
     nb_pairs=int(binom(nb_seq,2))
     model.nb_seq=nb_seq
-    model.seq_len=seq_len  ##DOES THE MODEL REALLY NEED THE SEQUENCE LENGTH? I DON'T THINK SO (IN ANY CASE NOT TO BE INITIALIZED)
-    model.nb_pairs=nb_pairs
-    seq2pair = torch.zeros(nb_pairs, nb_seq)
-    k = 0
+    model.seq_len=seq_len
+    seq2pair=torch.zeros(nb_pairs, nb_seq)
+    k=0
     for i in range(model.nb_seq):
         for j in range(i+1, model.nb_seq):
             seq2pair[k, i] = 1
@@ -37,7 +37,7 @@ def configure(model,seqs,device):
     del seq2pair
 
 scriptdir=os.path.dirname(os.path.realpath(__file__))
-parser = argparse.ArgumentParser()
+parser=argparse.ArgumentParser()
 parser.add_argument('alidir', type=str, help='path to input directory containing the\
 .fasta alignments')
 parser.add_argument('--o', type=str, default='', help='path to the output directory were the\
@@ -45,16 +45,21 @@ parser.add_argument('--o', type=str, default='', help='path to the output direct
 parser.add_argument('--m', type=str, default=os.path.join(scriptdir,'models/seqgen_model_state_dict.pt'), help="path to the NN model's state dictionary")
 parser.add_argument('--gpu', type=str, default='', help='gpu option')
 
-args = parser.parse_args()
+args=parser.parse_args()
 alidir=args.alidir+'/'
 outdir=args.o+'/' if len(args.o)>0 else alidir
 alignments=[item for item in os.listdir(alidir) if item[-5:]=='fasta']
 
-device = "cuda" if torch.cuda.is_available() and args.gpu!='' else "cpu"
+device="cuda" if torch.cuda.is_available() and args.gpu!='' else "cpu"
 print(f'Working with device={device}')
 
-model = AttentionNet(device=device,n_blocks=6)
-model.load_state_dict(torch.load(args.m),strict=True)
+model=AttentionNet(device=device,n_blocks=6)
+state_dict=torch.load(args.m)
+new_state_dict=OrderedDict()
+for k,v in state_dict.items():
+    name=k.replace("module.", "")  #remove "module." for models trained on multiple gpus
+    new_state_dict[name]=v
+model.load_state_dict(new_state_dict,strict=True)
 model.eval()
 tensors={}
 
@@ -76,7 +81,7 @@ for ali in tensors:
     ids=[seq for seq in seqs]
     tensor=tensors[ali][None,:,:]
     with torch.no_grad():
-        y_pred = model(tensor.float())[0]
+        y_pred=model(tensor.float())[0]
     y_pred=y_pred.view(model.nb_pairs)
     nn_dist={}
     for i,leaf1 in enumerate(seqs):
@@ -88,10 +93,10 @@ for ali in tensors:
                 nn_dist[(j,i)]=nn_dist[(i,j)]
                 counter+=1
     dm_nn=[[nn_dist[(i,j)] for j in range(len(seqs))] for i in range(len(seqs))]
-    dm_nn =skbio.DistanceMatrix(dm_nn, ids)
-    nn_newick_str =skbio.tree.nj(dm_nn, result_constructor=str)
+    dm_nn=skbio.DistanceMatrix(dm_nn, ids)
+    nn_newick_str=skbio.tree.nj(dm_nn, result_constructor=str)
     t_nn=Tree(nn_newick_str)
-    t_nn.write(format=5,outfile=outdir+'predicted_'+ali.split('.')[0]+'.tree')
+    t_nn.write(format=5,outfile=outdir+'predicted_'+ali.split('.')[0]+'.nwk')
     gc.collect()
-    del tensor, seqs, y_pred, dm_nn
+    del tensor,seqs,y_pred,dm_nn
 print('Done, predicted trees saved in '+outdir)
