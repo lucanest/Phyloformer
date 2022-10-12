@@ -54,7 +54,7 @@ device="cuda" if torch.cuda.is_available() and args.gpu!='' else "cpu"
 print(f'Working with device={device}')
 
 model=AttentionNet(device=device,n_blocks=6)
-state_dict=torch.load(args.m)
+state_dict=torch.load(args.m,map_location=device)
 new_state_dict=OrderedDict()
 for k,v in state_dict.items():
     name=k.replace("module.", "")  #remove "module." for models trained on multiple gpus
