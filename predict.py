@@ -24,7 +24,7 @@ def configure(model,seqs,device):
     seq_len=len(list(seqs.values())[0])
     nb_pairs=int(binom(nb_seq,2))
     model.nb_seq=nb_seq
-    model.seq_len=seq_len
+    model.seq_len=seq_len  ##DOES THE MODEL REALLY NEED THE SEQUENCE LENGTH? I DON'T THINK SO (IN ANY CASE NOT TO BE INITIALIZED)
     model.nb_pairs=nb_pairs
     seq2pair = torch.zeros(nb_pairs, nb_seq)
     k = 0
@@ -75,7 +75,8 @@ for ali in tensors:
         configure(model,seqs,device)
     ids=[seq for seq in seqs]
     tensor=tensors[ali][None,:,:]
-    y_pred = model(tensor.float())[0]
+    with torch.no_grad():
+        y_pred = model(tensor.float())[0]
     y_pred=y_pred.view(model.nb_pairs)
     nn_dist={}
     for i,leaf1 in enumerate(seqs):
