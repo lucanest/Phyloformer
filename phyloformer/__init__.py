@@ -1,2 +1,2 @@
 import phyloformer
-import attentions
+import phyloformer.attentions
