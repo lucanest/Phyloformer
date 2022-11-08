@@ -13,6 +13,15 @@ from collections import OrderedDict
 amino_acids = np.array(['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H',
  'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'X', '-'])
 
+def save_dm(dm,d_file):
+    with open(d_file,'w+') as fp:
+        fp.write(str(len(dm.ids))+'\n')
+        ids=list(dm.ids)
+        for i,dist in enumerate(dm.data):
+            dist=[str(item) for item in dist]
+            dist=' '.join(dist)
+            fp.write(str(ids[i])+'     '+dist+'\n')
+
 def ali_parser(file):
     sequences={}
     for seq_record in SeqIO.parse(file, "fasta"):
@@ -45,6 +54,7 @@ parser.add_argument('--o', type=str, default='', help='path to the output direct
 .tree tree files will be saved')
 parser.add_argument('--m', type=str, default=os.path.join(scriptdir,'models/seqgen_model_state_dict.pt'), help="path to the NN model's state dictionary")
 parser.add_argument('--gpu', type=str, default='', help='gpu option')
+parser.add_argument('--dm', type=str, default='', help='option to save predicted distance matrix')
 
 args=parser.parse_args()
 alidir=args.alidir+'/'
@@ -96,6 +106,8 @@ for ali in tensors:
                 counter+=1
     dm_nn=[[nn_dist[(i,j)] for j in range(len(seqs))] for i in range(len(seqs))]
     dm_nn=skbio.DistanceMatrix(dm_nn, ids)
+    if args.dm=='true':
+        save_dm(dm_nn,outdir+ali.split('.')[0]+'.dm')
     nn_newick_str=skbio.tree.nj(dm_nn, result_constructor=str)
     t_nn=Tree(nn_newick_str)
     t_nn.write(format=5,outfile=outdir+'predicted_'+ali.split('.')[0]+'.nwk')
