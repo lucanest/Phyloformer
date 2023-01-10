@@ -94,7 +94,7 @@ the possible models of evolution being those supported by Seq-Gen.
 Again, to follow the paper one can just do
 
 ```
-python simulations/simulateTrees.py --i <input directory with the .nwk tree files>  --o <output directory> --sg <path to Seq-Gen-1.3.4/source/>
+python simulations/simulateAlignments.py --i <input directory with the .nwk tree files>  --o <output directory> --sg <path to Seq-Gen-1.3.4/source/>
 ```
 ### Creating a tensor dataset
 ```
