@@ -242,7 +242,7 @@ def main():
             net.load_state_dict(L['state_dict'],strict=True)
 
         nets.append(net)
-        criterion = nn.MSELoss()
+        criterion = nn.MSELoss() if loss=='L2' else nn.L1Loss()
         MAE= nn.L1Loss()
         MRE= lambda x,y: torch.mean(torch.abs(x-y)/x).item()
     
