@@ -274,7 +274,6 @@ def main():
 
     #Save the models
     for i,net in enumerate(nets):
-        torch.save(net.state_dict(),out_dir+'/Model'+ID+'fold'+str(i+1)+'.pt')
         torch.save({'state_dict':net.state_dict(),
         'optimizer_state_dict':optimizer.state_dict(),
         'hyperparameters':hyperparameters,
@@ -282,7 +281,7 @@ def main():
         'train_losses':t_losses,
         'val_maes':v_MAEs,
         'val_mres':v_MREs},
-        out_dir+'/Model'+ID+'fold'+str(fold+1)+'.pt')
+        out_dir+'/Model'+ID+'fold'+str(i+1)+'.pt')
 
     print(f'total elapsed time: {time()-start_time} seconds')
 
