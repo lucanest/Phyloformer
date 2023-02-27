@@ -200,8 +200,9 @@ def main(args):
 
     print(f'hyperparameters={hyperparameters}')
     batch_size,epochs,lr, opt,loss,n_blocks,n_folds,n_heads,h_dim,dropout, amp= hyperparameters.values()
-
-
+    
+    if h_dim%n_heads!=0:
+        raise ValueError('The embedding dimension h_dim must be divisible by the number of heads n_heads!')
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
 
