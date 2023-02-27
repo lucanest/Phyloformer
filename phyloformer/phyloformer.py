@@ -6,7 +6,7 @@ from phyloformer.attentions import KernelAxialMultiAttention
 class AttentionNet(nn.Module):
     '''Phyloformer Network'''     
     def __init__(self,dropout=0.0,
-    nb_seq=20,seq_len=200,n_blocks=1,device='cpu'):
+    nb_seq=20,seq_len=200,n_blocks=1,h_dim=64,n_heads=4,device='cpu'):
         super(AttentionNet,self).__init__()
         self.n_blocks=n_blocks
         self.rowAttentions=nn.ModuleList()
@@ -14,18 +14,18 @@ class AttentionNet(nn.Module):
         self.layernorms=nn.ModuleList()
         self.fNNs=nn.ModuleList()
 
-        layers_1_1=[nn.Conv2d(in_channels=22,out_channels=64, kernel_size=1,stride=1),
+        layers_1_1=[nn.Conv2d(in_channels=22,out_channels=h_dim, kernel_size=1,stride=1),
         nn.ReLU()]
         self.block_1_1=nn.Sequential(*layers_1_1)
-        self.norm=nn.LayerNorm(64)
-        self.pwFNN=nn.Sequential(*[nn.Conv2d(in_channels=64,out_channels=1, kernel_size=1,stride=1),nn.Dropout(dropout),
+        self.norm=nn.LayerNorm(h_dim)
+        self.pwFNN=nn.Sequential(*[nn.Conv2d(in_channels=h_dim,out_channels=1, kernel_size=1,stride=1),nn.Dropout(dropout),
         nn.Softplus()])
         for i in range(self.n_blocks):
-            self.rowAttentions.append(KernelAxialMultiAttention(64,4,n=seq_len,k=50).to(device))
-            self.columnAttentions.append(KernelAxialMultiAttention(64,4,n=int(binom(nb_seq,2)),k=50).to(device))
-            self.layernorms.append(nn.LayerNorm(64).to(device))
-            self.fNNs.append(nn.Sequential(*[nn.Conv2d(in_channels=64,out_channels=256, kernel_size=1,stride=1,device=device),
-        nn.GELU(),nn.Conv2d(in_channels=256,out_channels=64, kernel_size=1,stride=1,device=device)]))
+            self.rowAttentions.append(KernelAxialMultiAttention(h_dim,n_heads,n=seq_len).to(device))
+            self.columnAttentions.append(KernelAxialMultiAttention(h_dim,n_heads,n=int(binom(nb_seq,2))).to(device))
+            self.layernorms.append(nn.LayerNorm(h_dim).to(device))
+            self.fNNs.append(nn.Sequential(*[nn.Conv2d(in_channels=h_dim,out_channels=h_dim*4, kernel_size=1,stride=1,device=device),
+        nn.Dropout(dropout),nn.GELU(),nn.Conv2d(in_channels=h_dim*4,out_channels=h_dim, kernel_size=1,stride=1,device=device)],nn.Dropout(dropout)))
             
         self.nb_seq=nb_seq
         self.seq_len=seq_len
