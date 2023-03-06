@@ -110,7 +110,7 @@ for ali in tensors:
         save_dm(dm_nn,outdir+ali.split('.')[0]+'.dm')
     nn_newick_str=skbio.tree.nj(dm_nn, result_constructor=str)
     t_nn=Tree(nn_newick_str)
-    t_nn.write(format=5,outfile=outdir+'predicted_'+ali.split('.')[0]+'.nwk')
+    t_nn.write(format=5,outfile=outdir+ali.split('.')[0]+'pf.nwk')
     gc.collect()
     del tensor,seqs,y_pred,dm_nn
 print('Done, predicted trees saved in '+outdir)
