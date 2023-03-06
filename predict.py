@@ -107,7 +107,7 @@ for ali in tensors:
     dm_nn=[[nn_dist[(i,j)] for j in range(len(seqs))] for i in range(len(seqs))]
     dm_nn=skbio.DistanceMatrix(dm_nn, ids)
     if args.dm=='true':
-        save_dm(dm_nn,outdir+ali.split('.')[0]+'.dm')
+        save_dm(dm_nn,outdir+ali.split('.')[0]+'.pf.dm')
     nn_newick_str=skbio.tree.nj(dm_nn, result_constructor=str)
     t_nn=Tree(nn_newick_str)
     t_nn.write(format=5,outfile=outdir+ali.split('.')[0]+'.pf.nwk')
