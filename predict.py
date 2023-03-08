@@ -101,8 +101,8 @@ for ali in tensors:
             if i==j:
                 nn_dist[(i,j)]=0
             if i<j:
-                pred=y_pred[counter].item()
-                nn_dist[(i,j)]=pred if pred>0.0001 else 0
+                pred=float('%.6f'%(pred))
+                nn_dist[(i,j)]=pred
                 nn_dist[(j,i)]=nn_dist[(i,j)]
                 counter+=1
     dm_nn=[[nn_dist[(i,j)] for j in range(len(seqs))] for i in range(len(seqs))]
