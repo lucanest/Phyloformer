@@ -69,8 +69,6 @@ state_dict=torch.load(args.m,map_location=device)
 new_state_dict=OrderedDict()
 for k,v in state_dict.items():
     name=k.replace("module.", "")  #remove "module." for models trained on multiple gpus
-    for i in range(6):
-        name=name.replace("fNNs."+str(i)+".2.","fNNs."+str(i)+".3.")
     new_state_dict[name]=v
 model.load_state_dict(new_state_dict,strict=True)
 model.to(device)
