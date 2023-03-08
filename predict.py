@@ -103,6 +103,7 @@ for ali in tensors:
             if i==j:
                 nn_dist[(i,j)]=0
             if i<j:
+                pred=y_pred[counter].item()
                 pred=float('%.6f'%(pred))
                 nn_dist[(i,j)]=pred
                 nn_dist[(j,i)]=nn_dist[(i,j)]
