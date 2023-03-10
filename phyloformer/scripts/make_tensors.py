@@ -1,10 +1,13 @@
-import os
 import argparse
+import os
+
 import numpy as np
 import torch
-from ete3 import Tree
-from Bio import SeqIO
+
 from itertools import permutations
+
+from Bio import SeqIO
+from ete3 import Tree
 from scipy.special import binom
 
 amino_acids = np.array(['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H',
@@ -31,16 +34,9 @@ def tree_dist(t,normalization=False):
 def to_array(seq):
     return np.array([(amino_acids==aa).astype(int) for aa in seq])
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--treedir',type=str,help='path to input directory containing the .nwk tree files')
-    parser.add_argument('--alidir', type=str, help='path to input directory containing corresponding .fasta alignments')
-    parser.add_argument('--o', type=str, help='path to output directory')
-    args = parser.parse_args()
-
-    tree_path = args.treedir
-    ali_path=args.alidir
-    out_path = args.o
+def make_tensors(tree_path, ali_path, out_dir):
+    if not os.path.exists(out_dir):
+        os.mkdir(out_dir)
 
     trees=[item[:-4] for item in os.listdir(tree_path) if item[-4:]=='.nwk']
 
@@ -63,10 +59,20 @@ def main():
             y.append(distances[(id1,id2)])
 
         y=torch.tensor(y)
-        torch.save(X,out_path+'/X_'+tree+'.pt')
-        torch.save(y,out_path+'/y_'+tree+'.pt')
+        torch.save(X,os.path.join(out_dir,'X_'+tree+'.pt'))
+        torch.save(y,os.path.join(out_dir,'y_'+tree+'.pt'))
 
     print('Done')
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-t', '--treedir', required=True, type=str,help='path to input directory containing the .nwk tree files')
+    parser.add_argument('-a', '--alidir', required=True, type=str, help='path to input directory containing corresponding .fasta alignments')
+    parser.add_argument('-o', '--output', required=False, default=".", type=str, help='path to output directory (default: current directory)')
+    args = parser.parse_args()
+
+    make_tensors(args.treedir, args.alidir, args.output)
 
 if __name__ == '__main__':
     main()

@@ -1,14 +1,18 @@
-import torch
 import argparse
-import numpy as np
 import os
-import skbio
 import gc
-from ete3 import Tree
-from Bio import SeqIO
-from scipy.special import binom
-from phyloformer.phyloformer import AttentionNet
+
+import skbio
+import torch
+import numpy as np
+
 from collections import OrderedDict
+
+from Bio import SeqIO
+from ete3 import Tree
+from scipy.special import binom
+
+from phyloformer.phyloformer import AttentionNet
 
 amino_acids = np.array(['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H',
  'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'X', '-'])
@@ -27,8 +31,10 @@ def ali_parser(file):
     for seq_record in SeqIO.parse(file, "fasta"):
         sequences[seq_record.id]=str(seq_record.seq)
     return sequences
+
 def to_array(seq):
     return np.array([(amino_acids==aa).astype(int) for aa in seq])
+
 def configure(model,seqs,device):
     nb_seq=len(seqs)
     seq_len=len(list(seqs.values())[0])
@@ -46,27 +52,16 @@ def configure(model,seqs,device):
     model.seq2pair=seq2pair.to(device)
     del seq2pair
 
-def main():
-    scriptdir=os.path.dirname(os.path.realpath(__file__))
-    parser=argparse.ArgumentParser()
-    parser.add_argument('alidir', type=str, help='path to input directory containing the\
-    .fasta alignments')
-    parser.add_argument('--o', type=str, default='', help='path to the output directory were the\
-    .tree tree files will be saved')
-    parser.add_argument('--m', type=str, default=os.path.join(scriptdir,'../pretrained_models/seqgen_model_state_dict.pt'), help="path to the NN model's state dictionary")
-    parser.add_argument('--gpu', type=str, default='', help='gpu option')
-    parser.add_argument('--dm', type=str, default='', help='option to save predicted distance matrix')
-    
-    args=parser.parse_args()
-    alidir=args.alidir+'/'
-    outdir=args.o+'/' if len(args.o)>0 else alidir
-    alignments=[item for item in os.listdir(alidir) if item[-5:]=='fasta']
-    
-    device="cuda" if torch.cuda.is_available() and args.gpu!='' else "cpu"
+def phyloformer_predict(alidir, model_path, device, outdir, save_dm):
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
     print(f'Working with device={device}')
-    
+    alignments = [item for item in os.listdir(alidir) if item[-5:]=='fasta']
     model=AttentionNet(device=device,n_blocks=6)
-    state_dict=torch.load(args.m,map_location=device)
+
+    loaded=torch.load(model_path,map_location=device)
+    state_dict = loaded["state_dict"] if loaded.get("state_dict") is not None else loaded
+
     new_state_dict=OrderedDict()
     for k,v in state_dict.items():
         name=k.replace("module.", "")  #remove "module." for models trained on multiple gpus
@@ -78,7 +73,7 @@ def main():
     
     for ali in alignments:
         X=[]
-        id_seq=ali_parser(alidir+ali)
+        id_seq=ali_parser(os.path.join(alidir, ali))
         arrays=[to_array(seq) for seq in id_seq.values()]
         for array in arrays:
                 X.append(((torch.from_numpy(array)).t().view(22,1,-1)))
@@ -88,7 +83,7 @@ def main():
     for ali in tensors:
         print(f'processing alignment {ali}...')
         counter=0
-        seqs=ali_parser(alidir+ali)
+        seqs=ali_parser(os.path.join(alidir, ali))
         if len(seqs)!=model.nb_seq:
             configure(model,seqs,device)
         ids=[seq for seq in seqs]
@@ -109,14 +104,38 @@ def main():
                     counter+=1
         dm_nn=[[nn_dist[(i,j)] for j in range(len(seqs))] for i in range(len(seqs))]
         dm_nn=skbio.DistanceMatrix(dm_nn, ids)
-        if args.dm=='true':
-            save_dm(dm_nn,outdir+ali.split('.')[0]+'.pf.dm')
+
+        if save_dm:
+            save_dm(dm_nn, os.path.join(outdir, ali.split('.')[0]+'.pf.dm'))
+
         nn_newick_str=skbio.tree.nj(dm_nn, result_constructor=str)
         t_nn=Tree(nn_newick_str)
-        t_nn.write(format=5,outfile=outdir+ali.split('.')[0]+'.pf.nwk')
+        t_nn.write(format=5,outfile=os.path.join(outdir, ali.split('.')[0]+'.pf.nwk'))
         gc.collect()
         del tensor,seqs,y_pred,dm_nn
-    print('Done, predicted trees saved in '+outdir)
+
+    print(f'Done, predicted trees saved in {outdir}')
+
+
+def main():
+    scriptdir = os.path.dirname(os.path.realpath(__file__))
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('alidir', type=str, help='path to input directory containing the\
+    .fasta alignments')
+    parser.add_argument('-o', '--output', type=str, required=False, help='path to the output directory were the\
+    .tree tree files will be saved (default: alidir)')
+    parser.add_argument('-m', '--model', type=str, required=False, default=os.path.join(scriptdir,"..", "pretrained_models", "seqgen_model_state_dict.pt"), help="path to the NN model's state dictionary (default: pretrained model)")
+    parser.add_argument('-g', '--gpu', required=False, action="store_true", help='use the GPU for inference (default: false)')
+    parser.add_argument('-d', '--dm',  required=False, action="store_true", help='save predicted distance matrix (default: false)')
+    args = parser.parse_args()
+
+    outdir = args.output if args.output is not None else args.alidir
+    device = "cuda" if torch.cuda.is_available() and args.gpu else "cpu"
+
+    print(args)
+
+    phyloformer_predict(args.alidir, args.model, device, outdir, args.dm)
 
 
 if __name__ == "__main__":

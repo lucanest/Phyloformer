@@ -1,10 +1,12 @@
+import os
 from setuptools import setup, find_packages
 
 setup(
     name="phyloformer",
-    version="0.0.1a0",
+    version="0.0.1a2",
     description="Fast and accurate Phylogeny estimation with self-attention Networks",
     long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     url="https://github.com/lucanest/Phyloformer",
     author="Luca Nesterenko, Bastien Boussau, Laurent Jacob",
     license="CeCIL",
@@ -33,6 +35,7 @@ setup(
             "simulate_alignments = phyloformer.scripts.simulateAlignments:main",
             "make_tensors = phyloformer.scripts.make_tensors:main",
             "predict = phyloformer.scripts.predict:main",
+            "evaluate = phyloformer.scripts.evaluate:main",
         ]
     }
 )

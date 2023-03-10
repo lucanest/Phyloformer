@@ -1,19 +1,23 @@
+import argparse
+import copy
+import json
+import math
+import os
+import random
+
+import numpy as np
 import torch
 import torch.nn as nn
-import os, sys, random
-import argparse
-import numpy as np
-import json
-import copy
-import math
-import sys
 
-from phyloformer.phyloformer import AttentionNet
-from torch.cuda.amp import autocast, GradScaler
-from torch.utils.data import Dataset, DataLoader
-from scipy.special import binom
 from time import time
 from operator import itemgetter
+
+from scipy.special import binom
+from torch.cuda.amp import autocast, GradScaler
+from torch.utils.data import Dataset, DataLoader
+
+from phyloformer.phyloformer import AttentionNet
+
 
 TITLE="""\
 ------------------------------------------------------------
@@ -27,6 +31,12 @@ ______ _           _        __
              |___/
 
 ------------------------------------------------------------"""
+
+OPTIMIZERS={
+    "Adam":torch.optim.Adam,
+    "AdamW":torch.optim.AdamW,
+    "SGD":torch.optim.SGD,
+}
 
 Strip=lambda string,chars: Strip(string.replace(chars[0],""),chars[1:]) if len(chars)>0 else string
 MAE= nn.L1Loss()
@@ -50,7 +60,7 @@ class TensorDataset(Dataset):
         return len(self.t)
 
     def __getitem__(self, index):
-        return torch.load(self.in_dir+'X'+self.t[index]),torch.load(self.in_dir+'y'+self.t[index])
+        return torch.load(os.path.join(self.in_dir,'X'+self.t[index])),torch.load(os.path.join(self.in_dir, 'y'+self.t[index]))
 
 
 def train(model,train_loader,test_loader,num_epochs,criterion,optimizer,amp,
@@ -196,29 +206,20 @@ def main():
     os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--i', type=str, help='/path/ to input directory containing the\
+    parser.add_argument('-i', '--input', required=True, type=str, help='/path/ to input directory containing the\
     the .pt tensors on which the model will be trained')
-    parser.add_argument('--c', type=str, help='/path/ to the configuration json file for the hyperparameters')
-    parser.add_argument('--o', type=str, help='/path/ to output directory where the model parameters\
-        and the metrics will be saved')
-    parser.add_argument('--load', default="", type=str, help='Load model parameters to train it further')
+    parser.add_argument('-c', '--config', required=True,type=str, help='/path/ to the configuration json file for the hyperparameters')
+    parser.add_argument('-o', '--output', required=False, default=".", type=str, help='/path/ to output directory where the model parameters\
+        and the metrics will be saved (default: current directory)')
+    parser.add_argument('-l', '--load', required=False, type=str, help='Load model parameters to train it further', metavar="PARAMS")
     args=parser.parse_args()
 
-    in_dir=args.i
-    out_dir=args.o
-    config=args.c
-    load=args.load
-
-    optimizers={"Adam":torch.optim.Adam,
-                "SGD":torch.optim.SGD,
-                "AdamW":torch.optim.AdamW}
-
     print(TITLE)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     start_time=time()
     print('pytorch version', torch.__version__)
     i_time=time()
-    device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f'device={device}')
     torch.backends.cudnn.benchmark = True
 
@@ -228,7 +229,7 @@ def main():
     i_time=time()
 
     # Load the hyperparameters from the config file
-    with open(config) as jsonfile:
+    with open(args.config) as jsonfile:
         hyperparameters=json.load(jsonfile)
 
     print(f'hyperparameters={hyperparameters}')
@@ -236,10 +237,10 @@ def main():
 
     if h_dim%n_heads!=0:
         raise ValueError('The embedding dimension h_dim must be divisible by the number of heads n_heads!')
-    if not os.path.exists(out_dir):
-        os.mkdir(out_dir)
+    if args.output != "." and not os.path.exists(args.output):
+        os.mkdir(args.output)
 
-    data=list({item[1:] for item in os.listdir(in_dir) if item[1]=='_'})
+    data=list({item[1:] for item in os.listdir(args.input) if item[1]=='_'})
     data=data[:]
 
     e_time=time()
@@ -262,8 +263,8 @@ def main():
         fold_time=time()
 
         # Create the dataloaders
-        test_dataset=TensorDataset(kfold(data,fold,l)[0],in_dir)
-        train_loader=DataLoader(dataset=TensorDataset(kfold(data,fold,l)[1],in_dir), batch_size=batch_size, shuffle=True)
+        test_dataset=TensorDataset(kfold(data,fold,l)[0],args.input)
+        train_loader=DataLoader(dataset=TensorDataset(kfold(data,fold,l)[1],args.input), batch_size=batch_size, shuffle=True)
         test_loader=DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
 
 
@@ -279,18 +280,18 @@ def main():
         model = AttentionNet(seq_len=seq_len,nb_seq=nb_seq,n_blocks=n_blocks,device=device,n_heads=n_heads,h_dim=h_dim,dropout=dropout).float().to(device)
 
         # Load checkpoint
-        if len(load)>0:
-            L=torch.load(load,map_location=device)
+        if args.load is not None:
+            L=torch.load(args.load,map_location=device)
             model.load_state_dict(L['state_dict'], strict=True)
 
         models.append(model)
         criterion = nn.MSELoss() if loss=='L2' else nn.L1Loss()
 
         kwargs={"lr":lr}
-        optimizer=optimizers[opt](models[fold].parameters(),**kwargs)
+        optimizer=OPTIMIZERS[opt](models[fold].parameters(),**kwargs)
         model_kwargs={}
 
-        if len(load)>0:
+        if args.load is not None:
             optimizer.load_state_dict(L['optimizer_state_dict'])
             t_losses, v_losses, v_MAEs, v_MREs=itemgetter('train_losses', 'val_losses', 'val_maes', 'val_mres')(L)
             model_kwargs={"t_losses":t_losses,
@@ -306,7 +307,7 @@ def main():
         bestmodel,epochs=train(model=models[fold],train_loader=train_loader,test_loader=test_loader,num_epochs=epochs,
                         criterion=criterion,optimizer=optimizer,amp=amp,scheduler=scheduler,device=device,
                         verbose=True,hyperparameters=hyperparameters,
-                        out_dir=out_dir, fold=fold,**model_kwargs)
+                        out_dir=args.output, fold=fold,**model_kwargs)
         bestmodels.append(bestmodel)
 
         print('\nThe fold took {:.3f} seconds\n'.format(time()-fold_time))

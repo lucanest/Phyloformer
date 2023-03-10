@@ -1,25 +1,13 @@
 import argparse
 import os
+
 import numpy as np
+
 from dendropy.simulate import treesim
 from ete3 import Tree
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--nleaves', type=int, default=20, help='number of leaves')
-    parser.add_argument('--ntrees', type=int, help='number of trees')
-    parser.add_argument('--type', type=str, default='uniform', help='topology: birth-death or uniform')
-    parser.add_argument('--o', type=str, default='', help='path to the output directory were the\
-    .nwk tree files will be saved')
-    parser.add_argument('--bl',type=str, default='uniform',help='branch length distribution: uniform or exponential')
 
-    args = parser.parse_args()
-    numleaves = args.nleaves
-    numtrees = args.ntrees
-    treeType = args.type
-    outdir = args.o
-    bl=args.bl
-
+def simulate_trees(numtrees, numleaves, outdir, treeType, bl):
     if not os.path.exists(outdir):
         os.mkdir(outdir)
 
@@ -54,6 +42,19 @@ def main():
 
     with open(os.path.join(outdir,  "stdout.txt"), 'a') as fout:
             fout.write(f"{numtrees} trees with {numleaves} leaves simulated, topology: {treeType}, branch length distribution: {bl}.\n")
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-n', '--ntrees', type=int, required=True, help='number of trees (default: 20)')
+    parser.add_argument('-l', '--nleaves', type=int, required=False, default=20, help='number of leaves')
+    parser.add_argument('-t','--topology', type=str, required=False, default='uniform', help='tree topology (default: uniform). Allowed values: [birth-death, uniform]', choices=["birth-death", "uniform"], metavar="TOPO")
+    parser.add_argument('-o', '--output', type=str, required=False, help='path to the output directory were the .nwk tree files will be saved')
+    parser.add_argument('-b', '--branchlength',type=str, required=False, default='uniform',help='branch length distribution (default: uniform). Allowed values: [exponential, uniform]', choices=["exponential", "uniform"], metavar="BL")
+    args = parser.parse_args()
+
+    simulate_trees(args.ntrees, args.nleaves, args.output, args.topology, args.branchlength)
+
 
 
 if __name__ == "__main__":
