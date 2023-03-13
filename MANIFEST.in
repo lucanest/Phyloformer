@@ -1,0 +1,2 @@
+include phyloformer/pretrained_models/*
+include LICENSE
