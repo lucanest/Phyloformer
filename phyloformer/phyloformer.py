@@ -10,14 +10,15 @@ class AttentionNet(nn.Module):
 
     def __init__(
         self,
-        n_blocks: int =1,
-        n_heads: int =4,
-        h_dim: int =64,
-        dropout: float =0.0,
-        device: str ="cpu",
-        n_seq: int =20,
-        seq_len: int =200,
-    ) :
+        n_blocks: int = 1,
+        n_heads: int = 4,
+        h_dim: int = 64,
+        dropout: float = 0.0,
+        device: str = "cpu",
+        n_seqs: int = 20,
+        seq_len: int = 200,
+        **kwargs
+    ):
         """Initializes internal Module state
 
         Parameters
@@ -32,7 +33,7 @@ class AttentionNet(nn.Module):
             Droupout rate, by default 0.0
         device : str, optional
             Device for model ("cuda" or "cpu"), by default "cpu"
-        n_seq : int, optional
+        n_seqs : int, optional
             Number of sequences in input alignments, by default 20
         seq_len : int, optional
             Length of sequences in input alignment, by default 200
@@ -41,19 +42,16 @@ class AttentionNet(nn.Module):
         -------
         AttentionNet
             Functional instance of AttentionNet for inference/fine-tuning
-        """        
+        """
         super(AttentionNet, self).__init__()
         # Initialize variables
         self.n_blocks = n_blocks
         self.n_heads = n_heads
         self.h_dim = h_dim
         self.dropout = dropout
-        self.n_seq = n_seq
-        self.seq_len = seq_len
         self.device = device
 
-        self.n_pairs = int(binom(n_seq, 2))
-        self._init_seq2pair()
+        self._init_seq2pair(n_seqs, seq_len)
 
         # Initialize Module lists
         self.rowAttentions = nn.ModuleList()
@@ -79,7 +77,7 @@ class AttentionNet(nn.Module):
                 KernelAxialMultiAttention(h_dim, n_heads, n=seq_len).to(device)
             )
             self.columnAttentions.append(
-                KernelAxialMultiAttention(h_dim, n_heads, n=int(binom(n_seq, 2))).to(
+                KernelAxialMultiAttention(h_dim, n_heads, n=int(binom(n_seqs, 2))).to(
                     device
                 )
             )
@@ -108,19 +106,40 @@ class AttentionNet(nn.Module):
                 )
             )
 
-    def _init_seq2pair(self):
+    def _init_seq2pair(self, n_seqs: int, seq_len: int):
         """Initialize Seq2Pair matrix"""
-        seq2pair = torch.zeros(self.n_pairs, self.n_seq)
+        self.n_seqs = n_seqs
+        self.seq_len = seq_len
+        self.n_pairs = int(binom(n_seqs, 2))
+
+        seq2pair = torch.zeros(self.n_pairs, self.n_seqs)
         k = 0
-        for i in range(self.n_seq):
-            for j in range(i + 1, self.n_seq):
+        for i in range(self.n_seqs):
+            for j in range(i + 1, self.n_seqs):
                 seq2pair[k, i] = 1
                 seq2pair[k, j] = 1
                 k = k + 1
 
         self.seq2pair = seq2pair.to(self.device)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Doed a forward pass through the Phyloformer network
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor (shape 4*22*n_seqs*seq_len)
+
+        Returns
+        -------
+        torch.Tensor
+            Output tensor (shape 4*n_pairs)
+
+        Raises
+        ------
+        ValueError
+            If the tensors aren't the right shape
+        """
         attentionmaps = []
         # 2D convolution that gives us the features in the third dimension
         # (i.e. initial embedding of each amino acid)
@@ -167,7 +186,6 @@ class AttentionNet(nn.Module):
         out = torch.squeeze(torch.mean(out, dim=-1))
 
         return out
-        # return out, attentionmaps
 
     def save(self, path: str) -> None:
         """Saves the model parameters to disk
@@ -183,7 +201,7 @@ class AttentionNet(nn.Module):
             "h_dim": self.h_dim,
             "dropout": self.dropout,
             "seq_len": self.seq_len,
-            "n_seq": self.n_seq,
+            "n_seqs": self.n_seqs,
             "device": self.device,
         }
         torch.save(
@@ -253,7 +271,7 @@ def load_state_dict(
     n_blocks: int = 6,
     h_dim: int = 64,
     n_heads: int = 4,
-    n_seq: int = 20,
+    n_seqs: int = 20,
     seq_len: int = 200,
     device: str = "cpu",
     dropout: float = 0.0,
@@ -262,8 +280,8 @@ def load_state_dict(
 ) -> AttentionNet:
     """This function loads a pre-trained phyloformer model to be used for inference
     or fine-tuning, from a file containing the state dict. The user must specify the
-    model's arrchitecture parameters themselves. For models saved with 
-    AttentionNet.save() you should use the phyloformer.phyloformer.load_model() 
+    model's arrchitecture parameters themselves. For models saved with
+    AttentionNet.save() you should use the phyloformer.phyloformer.load_model()
     function instead.
 
     Parameters
@@ -277,7 +295,7 @@ def load_state_dict(
         Hidden dimension of attention blocks, by default 64
     n_heads : int, optional
         Number of attentions heads per block, by default 4
-    n_seq : int, optional
+    n_seqs : int, optional
         Number of sequences in input alignments, by default 20
     seq_len : int, optional
         Length of sequences in input alignments, by default 200
@@ -297,7 +315,7 @@ def load_state_dict(
         n_blocks=n_blocks,
         n_heads=n_heads,
         h_dim=h_dim,
-        n_seq=n_seq,
+        n_seqs=n_seqs,
         seq_len=seq_len,
         dropout=dropout,
         device=device,
