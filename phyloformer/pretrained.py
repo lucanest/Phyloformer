@@ -1,3 +1,6 @@
+"""The pretrained module contains functions to load functional pre-trainde instances 
+of the Phyloformer model.
+"""
 import os
 
 import torch
