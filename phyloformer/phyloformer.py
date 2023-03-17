@@ -1,5 +1,11 @@
+"""The phyloformer module contains the Phyloformer network as well as functions to 
+create and load instances of the network from disk
+"""
+
+import skbio
 import torch
 import torch.nn as nn
+from ete3 import Tree
 from scipy.special import binom
 
 from phyloformer.attentions import KernelAxialMultiAttention
@@ -128,12 +134,12 @@ class AttentionNet(nn.Module):
         Parameters
         ----------
         x : torch.Tensor
-            Input tensor (shape 4*22*n_seqs*seq_len)
+            Input tensor (shape 1\*22\*n_seqs\*seq_len)
 
         Returns
         -------
         torch.Tensor
-            Output tensor (shape 4*n_pairs)
+            Output tensor (shape 1\*n_pairs)
 
         Raises
         ------
@@ -208,6 +214,88 @@ class AttentionNet(nn.Module):
             {"architecture": architecture, "state_dict": self.state_dict()}, path
         )
 
+    def infer_dm(self, X: torch.Tensor, ids: list[str] = None) -> skbio.DistanceMatrix:
+        """Infers a phylogenetic distance matrix from embedded alignment tensor
+
+        Parameters
+        ----------
+        X : torch.Tensor
+            Input alignment, embedded as a tensor (shape 22\*n_seq\*seq_len)
+        ids : list[str], optional
+            Identifiers of the sequences in the input tensor, by default None
+
+        Returns
+        -------
+        skbio.DistanceMatrix
+            Phylolgenetic distance matrix inferred by Phyloformer
+
+        Raises
+        ------
+        ValueError
+            If the tensors aren't the right shape
+        """
+
+        # reshape from 22*n_seq*seq_len to 1*22*n_seq*seq_len
+        tensor = X[None, :, :]
+        tensor.to(self.device)
+
+        # Infer distances
+        with torch.no_grad():
+            predictions = self(tensor.float())
+        predictions = predictions.view(self.n_pairs)
+
+        # Build distance matrix
+        nn_dist = {}
+        cursor = 0
+        for i in range(self.n_seqs):
+            for j in range(self.n_seqs):
+                if i == j:
+                    nn_dist[(i, j)] = 0
+                if i < j:
+                    pred = predictions[cursor].item()
+                    pred = float("%.6f" % (pred))
+                    nn_dist[(i, j)], nn_dist[(j, i)] = pred, pred
+                    cursor += 1
+
+        return skbio.DistanceMatrix(
+            [[nn_dist[(i, j)] for j in range(self.n_seqs)] for i in range(self.n_seqs)],
+            ids=ids,
+        )
+
+    def infer_tree(
+        self,
+        X: torch.Tensor,
+        ids: list[str] = None,
+        dm: skbio.DistanceMatrix = None,
+    ) -> Tree:
+        """Infers a phylogenetic tree from an embedded alignment tensor
+
+        Parameters
+        ----------
+        X : torch.Tensor
+            Input alignment, embedded as a tensor (shape 22\*n_seq\*seq_len)
+        ids : list[str], optional
+            Identifiers of the sequences in the input tensor, by default None
+        dm : skbio.DistanceMatrix, optional
+            Precomputed distance matrix if you have already run `AttentionNet.infer_dm`
+            on your own, by default None
+
+        Returns
+        -------
+        Tree
+            Phylogenetic tree computed with neighbour joining from the distance matrix
+            inferred by Phyloformer
+
+        Raises
+        ------
+        ValueError
+            If the tensors aren't the right shape
+        """
+        phyloformer_dm = dm if dm is not None else self.infer_dm(X, ids)
+        nn_newick_str = skbio.tree.nj(phyloformer_dm, result_constructor=str)
+
+        return Tree(nn_newick_str)
+
 
 def _init_model(model: AttentionNet, state_dict: dict, single_gpu: bool):
     """Loads  a state_dict into a Phyloformer model
@@ -281,8 +369,7 @@ def load_state_dict(
     """This function loads a pre-trained phyloformer model to be used for inference
     or fine-tuning, from a file containing the state dict. The user must specify the
     model's arrchitecture parameters themselves. For models saved with
-    AttentionNet.save() you should use the phyloformer.phyloformer.load_model()
-    function instead.
+    `AttentionNet.save` you should use the `load_model` function instead.
 
     Parameters
     ----------
