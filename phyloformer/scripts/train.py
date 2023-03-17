@@ -64,8 +64,8 @@ class TensorDataset(Dataset):
 
 
 def train(model,train_loader,test_loader,num_epochs,criterion,optimizer,amp,
-        scheduler,device,hyperparameters,fold,
-        out_dir,t_losses=[], v_losses=[], v_MAEs=[], v_MREs=[],verbose=True):
+        scheduler,device,hyperparameters,writer, fold,
+        out_dir,t_losses=[], v_losses=[], v_MAEs=[], v_MREs=[],verbose=True,):
         ID=Strip(str(hyperparameters),":{}, '")
         logloss_file = open(os.path.join(out_dir, f"losses_fold{fold}.log"), "w")
         logloss_file.write(
@@ -166,6 +166,14 @@ def train(model,train_loader,test_loader,num_epochs,criterion,optimizer,amp,
                 v_losses.append(val_loss)
                 scheduler.step(val_loss)
 
+                if writer is not None:
+                    writer.add_scalars("Losses", {
+                        "train": t_losses[-1],
+                        "val": val_loss
+                    }, epoch)
+                    writer.add_scalar("val/MRE", val_MRE, epoch)
+                    writer.add_scalar("val/MAE", val_MAE, epoch)
+
                 logloss_file.write(
                     f"{epoch},{t_losses[-1]},{val_loss},{val_MAE},{val_MRE}\n"
                 )
@@ -189,9 +197,9 @@ def train(model,train_loader,test_loader,num_epochs,criterion,optimizer,amp,
 
                 else:
                     counter+=1
-                if counter>8 or math.isnan(val_loss):
-                    #print(counter,val_loss)
-                    return bestmodel, epoch+1
+                # if counter>8 or math.isnan(val_loss):
+                #     #print(counter,val_loss)
+                #     return bestmodel, epoch+1
 
             if (epoch%5==0 or epoch==num_epochs-1) and verbose:
                 print(f'\nepoch={epoch+1}, train loss={t_losses[-1]:.6f}, '
@@ -212,10 +220,16 @@ def main():
     parser.add_argument('-o', '--output', required=False, default=".", type=str, help='/path/ to output directory where the model parameters\
         and the metrics will be saved (default: current directory)')
     parser.add_argument('-l', '--load', required=False, type=str, help='Load model parameters to train it further', metavar="PARAMS")
+    parser.add_argument('-t', '--tensorboard', action="store_true", help="wether to save logs for tensorboards")
     args=parser.parse_args()
 
     print(TITLE)
     device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    writer = None
+    if args.tensorboard:
+        from torch.utils.tensorboard import SummaryWriter
+        writer = SummaryWriter()
 
     start_time=time()
     print('pytorch version', torch.__version__)
@@ -307,8 +321,12 @@ def main():
         bestmodel,epochs=train(model=models[fold],train_loader=train_loader,test_loader=test_loader,num_epochs=epochs,
                         criterion=criterion,optimizer=optimizer,amp=amp,scheduler=scheduler,device=device,
                         verbose=True,hyperparameters=hyperparameters,
-                        out_dir=args.output, fold=fold,**model_kwargs)
+                        out_dir=args.output, writer=writer,fold=fold,**model_kwargs)
         bestmodels.append(bestmodel)
+
+        if writer is not None:
+            writer.flush()
+            writer.close()
 
         print('\nThe fold took {:.3f} seconds\n'.format(time()-fold_time))
 
