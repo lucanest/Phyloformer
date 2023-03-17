@@ -19,6 +19,7 @@ setup(
 	"biopython>=1.79",
 	"dendropy>=4.5.2",
 	"scikit-bio>=0.5.6",
+    "tqdm>=4.65.0",
     ],
     package_data={
         'phyloformer': [
