@@ -12,6 +12,7 @@ from torch.cuda.amp import GradScaler, autocast
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+from phyloformer.metrics import MAE, MRE
 from phyloformer.phyloformer import AttentionNet
 
 Scheduler = Union[
@@ -28,10 +29,6 @@ OPTIMIZERS = {
     "AdamW": torch.optim.AdamW,
     "SGD": torch.optim.SGD,
 }
-
-# TODO MOVE this to a dedicated module
-MAE = torch.nn.L1Loss()
-MRE = lambda x, y: torch.mean(torch.abs(x - y) / x).item()
 
 
 def init_training(
@@ -297,7 +294,8 @@ def save_checkpoint(
 
 
 def load_checkpoint(
-    path: str, device: str = "cpu",
+    path: str,
+    device: str = "cpu",
 ) -> Tuple[
     AttentionNet,
     torch.optim.Optimizer,
