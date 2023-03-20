@@ -1,6 +1,7 @@
 """The phyloformer module contains the Phyloformer network as well as functions to 
 create and load instances of the network from disk
 """
+from typing import Any, Dict, Union
 
 import skbio
 import torch
@@ -193,15 +194,15 @@ class AttentionNet(nn.Module):
 
         return out
 
-    def save(self, path: str) -> None:
-        """Saves the model parameters to disk
+    def _get_architecture(self) -> Dict[str, Any]:
+        """Returns architecture parameters of the model
 
-        Parameters
-        ----------
-        path : str
-            Path to save the model to
-        """
-        architecture = {
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionnary containing model architecture
+        """        
+        return {
             "n_blocks": self.n_blocks,
             "n_heads": self.n_heads,
             "h_dim": self.h_dim,
@@ -210,11 +211,26 @@ class AttentionNet(nn.Module):
             "n_seqs": self.n_seqs,
             "device": self.device,
         }
+
+    def save(self, path: str) -> None:
+        """Saves the model parameters to disk
+
+        Parameters
+        ----------
+        path : str
+            Path to save the model to
+        """
         torch.save(
-            {"architecture": architecture, "state_dict": self.state_dict()}, path
+            {
+                "architecture": self._get_architecture(),
+                "state_dict": self.state_dict(),
+            },
+            path,
         )
 
-    def infer_dm(self, X: torch.Tensor, ids: list[str] = None) -> skbio.DistanceMatrix:
+    def infer_dm(
+        self, X: torch.Tensor, ids: Union[list[str], None] = None
+    ) -> skbio.DistanceMatrix:
         """Infers a phylogenetic distance matrix from embedded alignment tensor
 
         Parameters
@@ -265,7 +281,7 @@ class AttentionNet(nn.Module):
     def infer_tree(
         self,
         X: torch.Tensor,
-        ids: list[str] = None,
+        ids: Union[list[str], None] = None,
         dm: skbio.DistanceMatrix = None,
     ) -> Tree:
         """Infers a phylogenetic tree from an embedded alignment tensor
