@@ -22,7 +22,7 @@ def MAE(input: torch.Tensor, target: torch.Tensor) -> float:
     float
         Mean Absolute Error
     """
-    return torch.nn.L1Loss(input, target).item()
+    return torch.nn.L1Loss()(input, target).item()
 
 
 def MRE(input: torch.Tensor, target: torch.Tensor) -> float:
