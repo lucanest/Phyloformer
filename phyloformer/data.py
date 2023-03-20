@@ -3,7 +3,7 @@ The data module contains functions that are used to load alignment data in a for
 the Phyloformer network understands. 
 """
 import os
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Optional
 
 import numpy as np
 import skbio
@@ -18,7 +18,7 @@ AMINO_ACIDS = np.array(list("ARNDCQEGHILKMFPSTWYVX-"))
 class TensorDataset(Dataset):
     """A Dataset class to train Phyloformer networks"""
 
-    def __init__(self, directory: str, filter: Union[List[str], None] = None):
+    def __init__(self, directory: str, filter: Optional[List[str]] = None):
         """Instanciates a TensorDataset
 
         Parameters

@@ -1,7 +1,7 @@
 """The phyloformer module contains the Phyloformer network as well as functions to 
 create and load instances of the network from disk
 """
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional
 
 import skbio
 import torch
@@ -49,7 +49,19 @@ class AttentionNet(nn.Module):
         -------
         AttentionNet
             Functional instance of AttentionNet for inference/fine-tuning
+
+        Raises
+        ------
+        ValueError
+            If h_dim is not divisible by n_heads
         """
+
+        if h_dim % n_heads != 0:
+            raise ValueError(
+                "The embedding dimension (h_dim) must be divisible"
+                "by the number of heads (n_heads)!"
+            )
+
         super(AttentionNet, self).__init__()
         # Initialize variables
         self.n_blocks = n_blocks
@@ -201,7 +213,7 @@ class AttentionNet(nn.Module):
         -------
         Dict[str, Any]
             Dictionnary containing model architecture
-        """        
+        """
         return {
             "n_blocks": self.n_blocks,
             "n_heads": self.n_heads,
@@ -229,7 +241,7 @@ class AttentionNet(nn.Module):
         )
 
     def infer_dm(
-        self, X: torch.Tensor, ids: Union[list[str], None] = None
+        self, X: torch.Tensor, ids: Optional[list[str]] = None
     ) -> skbio.DistanceMatrix:
         """Infers a phylogenetic distance matrix from embedded alignment tensor
 
@@ -281,8 +293,8 @@ class AttentionNet(nn.Module):
     def infer_tree(
         self,
         X: torch.Tensor,
-        ids: Union[list[str], None] = None,
-        dm: skbio.DistanceMatrix = None,
+        ids: Optional[list[str]] = None,
+        dm: Optional[skbio.DistanceMatrix] = None,
     ) -> Tree:
         """Infers a phylogenetic tree from an embedded alignment tensor
 
