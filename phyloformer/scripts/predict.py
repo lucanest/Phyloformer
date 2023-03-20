@@ -19,6 +19,12 @@ def make_predictions(model: AttentionNet, aln_dir: str, out_dir: str, save_dm: b
         pbar.set_description(f"Processing {base}")
 
         tensor, ids = load_alignment(os.path.join(aln_dir, aln))
+
+        # check if model input settings match alignment
+        _, seq_len, n_seqs = tensor.shape
+        if model.seq_len != seq_len or model.n_seqs != n_seqs:
+            model._init_seq2pair(n_seqs=n_seqs, seq_len=seq_len)
+
         dm = model.infer_dm(tensor, ids)
         if save_dm:
             write_dm(dm, os.path.join(out_dir, f"{base}.pf.dm"))
