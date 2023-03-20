@@ -1,13 +1,18 @@
 """The training submodule contains necessary functions to train a Phyloformer network
 """
 
+import copy
+import math
+from contextlib import nullcontext
+from typing import Any, Dict, Optional, Tuple, Union
 
-from typing import Any, Dict, Tuple, Union
-
+import numpy as np
 import torch
+from torch.cuda.amp import GradScaler, autocast
+from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 from phyloformer.phyloformer import AttentionNet
-
 
 Scheduler = Union[
     torch.optim.lr_scheduler._LRScheduler, torch.optim.lr_scheduler.ReduceLROnPlateau
@@ -23,6 +28,10 @@ OPTIMIZERS = {
     "AdamW": torch.optim.AdamW,
     "SGD": torch.optim.SGD,
 }
+
+# TODO MOVE this to a dedicated module
+MAE = torch.nn.L1Loss()
+MRE = lambda x, y: torch.mean(torch.abs(x - y) / x).item()
 
 
 def init_training(
@@ -71,9 +80,138 @@ def init_training(
     return optimizer_instance, scheduler, criterion
 
 
-def training_loop():
+def training_loop(
+    model: AttentionNet,
+    optimizer: torch.optim.Optimizer,
+    scheduler: Scheduler,
+    criterion: torch.nn.modules.loss._Loss,
+    train_data: DataLoader,
+    val_data: DataLoader,
+    device: str = "cpu",
+    epochs: int = 80,
+    amp: bool = True,
+    clip_gradients: bool = True,
+    early_stopping: bool = False,
+    stopping_steps: int = 8,
+    best_path: Optional[str] = None,
+    checkpoint_path: Optional[str] = None,
+    log_file: Optional[str] = None,
+    tensorboard_writer: Optional[Any] = None,
+    config: Dict[str, Any] = dict(),
+    **kwargs,
+) -> Tuple[AttentionNet, int]:
     """Trains the Phyloformer model on a dataset with given optimizer and scheduler"""
-    pass
+    losses_file = None
+    if log_file is not None:
+        losses_file = open(log_file, "w+")
+        losses_file.write("epoch,train_loss,val_loss,val_MAE,val_MRE\n")
+
+    if device == "cuda":
+        scaler = GradScaler()
+
+    no_improvement_counter = 0
+    best_model = copy.deepcopy(model)
+    best_loss = None
+    model = model.to(device)
+    train_losses, val_losses = [], []
+    val_MAEs, val_MREs = [], []
+
+    for epoch in tqdm(range(epochs)):
+        # TRAINING STEP
+        model.train()
+        epoch_train_losses = []
+        for batch in train_data:
+            x_train, y_train = batch
+            x_train, y_train = x_train.to(device), y_train.to(device)
+            inputs = x_train.float()
+
+            with (autocast() if device == "cuda" and amp else nullcontext()):
+                optimizer.zero_grad()
+                outputs = model(inputs)
+                y_train = torch.squeeze(y_train.type_as(outputs))
+                train_loss = criterion(outputs, y_train)
+                if device == "cuda" and amp:
+                    scaler.scale(train_loss).backward()
+                    if clip_gradients:
+                        scaler.unscale_(optimizer)
+                        torch.nn.utils.clip_grad_norm_(
+                            model.parameters(), max_norm=2, error_if_nonfinite=False
+                        )
+                    scaler.step(optimizer)
+                    scaler.update()
+                else:
+                    train_loss.backward()
+                    optimizer.step()
+
+            epoch_train_losses.append(train_loss.item())
+
+        train_losses.append(np.mean(epoch_train_losses))
+
+        # Validation Step
+        with torch.no_grad():
+            epoch_MAEs, epoch_MREs, epoch_val_losses = [], [], []
+            for batch in val_data:
+                x_val, y_val = batch
+                x_val, y_val = x_val.to(device), y_val.to(device)
+
+                model.eval()
+                inputs = x_val.float()
+                with (autocast() if device == "cuda" and amp else nullcontext()):
+                    outputs = model(inputs)
+                    y_val = torch.squeeze(y_val.type_as(outputs))
+                    val_loss = criterion(outputs, y_val).item()
+                    val_MAE = MAE(outputs, y_val).item()
+                    val_MRE = MRE(outputs, y_val)
+
+                epoch_val_losses.append(val_loss)
+                epoch_MAEs.append(val_MAE)
+                epoch_MREs.append(val_MRE)
+
+        val_losses.append(np.mean(epoch_val_losses))
+        val_MAEs.append(np.mean(epoch_MAEs))
+        val_MREs.append(np.mean(epoch_MREs))
+
+        scheduler.step(val_losses[-1])
+
+        # Logging
+        if losses_file is not None:
+            losses_file.write(
+                f"{epoch},{train_losses[-1]},{val_losses[-1]},{val_MAEs[-1]},{val_MREs[-1]}\n"
+            )
+        if tensorboard_writer is not None:
+            tensorboard_writer.add_scalars(
+                "Losses", {"train": train_losses[-1], "val": val_losses[-1]}, epoch
+            )
+            tensorboard_writer.add_scalar("val/MAE", val_MAEs[-1], epoch)
+            tensorboard_writer.add_scalar("val/MRE", val_MREs[-1], epoch)
+
+        if epoch == 0:
+            best_loss = val_losses[-1]
+
+        # Save checkpoint
+        if checkpoint_path is not None:
+            save_checkpoint(model, optimizer, scheduler, config, checkpoint_path)
+
+        # Check if best model so far
+        if epoch > 0 and val_losses[-1] < best_loss:
+            no_improvement_counter = 0
+            best_loss = val_losses[-1]
+            best_model = copy.deepcopy(model)
+            if best_path is not None:
+                save_checkpoint(model, optimizer, scheduler, config, best_path)
+        else:
+            no_improvement_counter += 1
+
+        # Stop early if validation loss has not improved for a while
+        if (early_stopping and no_improvement_counter > stopping_steps) or math.isnan(
+            val_losses[-1]
+        ):
+            return best_model, epoch + 1
+
+    if losses_file is not None:
+        losses_file.close()
+
+    return best_model, epochs
 
 
 def save_checkpoint(
