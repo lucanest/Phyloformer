@@ -100,7 +100,54 @@ def training_loop(
     config: Dict[str, Any] = dict(),
     **kwargs,
 ) -> Tuple[AttentionNet, int]:
-    """Trains the Phyloformer model on a dataset with given optimizer and scheduler"""
+    """Trains a Phyloformer model
+
+    Parameters
+    ----------
+    model : AttentionNet
+        model instance to train
+    optimizer : torch.optim.Optimizer
+        Optimizer for training
+    scheduler : Scheduler
+        Learning rate scheduler
+    criterion : torch.nn.modules.loss._Loss
+        Loss function
+    train_data : DataLoader
+        Training data
+    val_data : DataLoader
+        Validation data
+    device : str, optional
+        Device on which to train ("cpu" or "cuda"), by default "cpu"
+    epochs : int, optional
+        Number of epochs to train the model for, by default 80
+    amp : bool, optional
+        Use automatic mixed precision (only available on "cuda" device), by default True
+    clip_gradients : bool, optional
+        Wether to clip gradients during training, by default True
+    early_stopping : bool, optional
+        Wether to stop trainig early if there is no improvement of validation loss
+        , by default False
+    stopping_steps : int, optional
+        After how many stesp without improvement to stop training early, by default 8
+    best_path : Optional[str], optional
+        Path to save the best checkpoint so fat, by default None
+    checkpoint_path : Optional[str], optional
+        Path to save the last checkpoint, by default None
+    log_file : Optional[str], optional
+        Path to the log file to write training metrics, by default None
+    tensorboard_writer : Optional[Any], optional
+        SummaryWriter for following training on tensorboard, by default None
+    config : Dict[str, Any], optional
+        Config dictionary (saved in checkpoints), by default dict()
+
+    Returns
+    -------
+    Tuple[AttentionNet, int]
+        a tuple containing:
+         - The model with the best validation loss
+         - The epoch at which this function returns
+    """
+
     losses_file = None
     if log_file is not None:
         losses_file = open(log_file, "w+")
@@ -250,7 +297,7 @@ def save_checkpoint(
 
 
 def load_checkpoint(
-    path: str,
+    path: str, device: str = "cpu",
 ) -> Tuple[
     AttentionNet,
     torch.optim.Optimizer,
@@ -264,6 +311,8 @@ def load_checkpoint(
     ----------
     path : str
         Path to the saved checkpoint
+    device: str, optional
+        Device to load the model onto ("cpu" or "cuda"), by default "cpu"
 
     Returns
     -------
@@ -278,12 +327,13 @@ def load_checkpoint(
          - The training configuration
     """
 
-    checkpoint = torch.load(path)
+    checkpoint = torch.load(path, map_location=device)
     config = checkpoint["config"]
 
     # Loading model
     model = AttentionNet(**checkpoint["model"]["architecture"])
     model.load_state_dict(checkpoint["model"]["state_dict"], strict=True)
+    model.to(device)
 
     # Loading other objects
     optimizer, scheduler, loss = init_training(model, **config)
