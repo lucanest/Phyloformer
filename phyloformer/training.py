@@ -4,6 +4,7 @@
 import copy
 import math
 from contextlib import nullcontext
+from time import time
 from typing import Any, Dict, Optional, Tuple, Union
 
 import numpy as np
@@ -148,7 +149,7 @@ def training_loop(
     losses_file = None
     if log_file is not None:
         losses_file = open(log_file, "w+")
-        losses_file.write("epoch,train_loss,val_loss,val_MAE,val_MRE\n")
+        losses_file.write("timestamp,epoch,train_loss,val_loss,val_MAE,val_MRE\n")
 
     if device == "cuda":
         scaler = GradScaler()
@@ -204,7 +205,7 @@ def training_loop(
                     outputs = model(inputs)
                     y_val = torch.squeeze(y_val.type_as(outputs))
                     val_loss = criterion(outputs, y_val).item()
-                    val_MAE = MAE(outputs, y_val).item()
+                    val_MAE = MAE(outputs, y_val)
                     val_MRE = MRE(outputs, y_val)
 
                 epoch_val_losses.append(val_loss)
@@ -220,7 +221,7 @@ def training_loop(
         # Logging
         if losses_file is not None:
             losses_file.write(
-                f"{epoch},{train_losses[-1]},{val_losses[-1]},{val_MAEs[-1]},{val_MREs[-1]}\n"
+                f"{time()},{epoch},{train_losses[-1]},{val_losses[-1]},{val_MAEs[-1]},{val_MREs[-1]}\n"
             )
         if tensorboard_writer is not None:
             tensorboard_writer.add_scalars(
