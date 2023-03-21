@@ -221,7 +221,6 @@ class AttentionNet(nn.Module):
             "dropout": self.dropout,
             "seq_len": self.seq_len,
             "n_seqs": self.n_seqs,
-            "device": self.device,
         }
 
     def save(self, path: str) -> None:
@@ -378,6 +377,7 @@ def load_model(path: str, device: str = "cpu", single_gpu: bool = True) -> Atten
             "and a 'architecture' entry"
         )
 
+    loaded["architecture"].pop("device")
     model = AttentionNet(**loaded["architecture"], device=device)
     _init_model(model, loaded["state_dict"], single_gpu)
     model.to(device)
