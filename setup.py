@@ -1,9 +1,10 @@
 import os
 from setuptools import setup, find_packages
+from phyloformer import __version__
 
 setup(
     name="phyloformer",
-    version="0.0.1a2",
+    version=__version__,
     description="Fast and accurate Phylogeny estimation with self-attention Networks",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
@@ -19,6 +20,7 @@ setup(
 	"biopython>=1.79",
 	"dendropy>=4.5.2",
 	"scikit-bio>=0.5.6",
+    "tqdm>=4.65.0",
     ],
     package_data={
         'phyloformer': [
