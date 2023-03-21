@@ -88,13 +88,13 @@ def main():
 
     model = None
     if args.model.lower() == "seqgen":
-        model = seqgen()
+        model = seqgen(device=device)
     elif args.model.lower() == "evosimz":
-        model = evosimz()
+        model = evosimz(device=device)
     elif args.model is not None:
         if not os.path.isfile(args.model):
             raise ValueError(f"The specified model file: {args.model} does not exist")
-        model = load_model(args.model)
+        model = load_model(args.model, device=device)
     else:
         raise ValueError("You must specify the model to use")
 
