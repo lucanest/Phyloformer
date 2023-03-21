@@ -8,8 +8,8 @@ from phyloformer.data import load_alignment, load_tree
 
 
 def make_tensors(tree_dir: str, aln_dir: str, out_dir: str):
-
-    for tree_file in (pbar := tqdm(os.listdir(tree_dir))):
+    trees = [file for file in os.listdir(tree_dir) if file.endswith(".nwk")]
+    for tree_file in (pbar := tqdm(trees)):
         identifier = tree_file.rstrip(".nwk")
         pbar.set_description(f"Processing {identifier}")
         tree_tensor, _ = load_tree(os.path.join(tree_dir, tree_file))
