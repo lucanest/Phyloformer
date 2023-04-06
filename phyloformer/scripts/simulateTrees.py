@@ -2,16 +2,16 @@ import argparse
 import os
 
 import numpy as np
-
 from dendropy.simulate import treesim
 from ete3 import Tree
+from tqdm import tqdm
 
 
 def simulate_trees(numtrees, numleaves, outdir, treeType, bl):
     if not os.path.exists(outdir):
         os.mkdir(outdir)
 
-    for i in range(numtrees):
+    for i in tqdm(range(numtrees)):
         #Generating the tree topology
         outname = ""
         outname = os.path.join(outdir, str(i) + "_" + str(numleaves) + "_leaves.nwk")

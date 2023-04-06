@@ -1,26 +1,25 @@
 import os
 from setuptools import setup, find_packages
-from phyloformer import __version__
 
 setup(
     name="phyloformer",
-    version=__version__,
+    version="0.0.1a4",
     description="Fast and accurate Phylogeny estimation with self-attention Networks",
-    long_description=open("README.md").read(),
+    long_description=open("./README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/lucanest/Phyloformer",
     author="Luca Nesterenko, Bastien Boussau, Laurent Jacob",
     license="CeCIL",
     packages=find_packages(),
     install_requires=[
-	"torch>=1.13.1",
-	"scipy>=1.7.3",
-	"numpy>=1.21.2",
-	"ete3>=3.1.2",
-	"biopython>=1.79",
-	"dendropy>=4.5.2",
-	"scikit-bio>=0.5.6",
-    "tqdm>=4.65.0",
+        "torch>=1.13.1",
+        "scipy>=1.7.3",
+        "numpy>=1.21.2",
+        "ete3>=3.1.2",
+        "biopython>=1.79",
+        "dendropy>=4.5.2",
+        "scikit-bio>=0.5.6",
+        "tqdm>=4.65.0",
     ],
     package_data={
         'phyloformer': [

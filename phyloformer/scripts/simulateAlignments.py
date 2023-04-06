@@ -2,6 +2,8 @@ import argparse
 import os
 import subprocess
 
+from tqdm import tqdm
+
 SEQGEN_MODELS = ["JTT", "WAG", "PAM", "BLOSUM", "MTREV", "CPREV45", "MTART", "LG", "HIVB", "GENERAL"]
 
 def simulate_alignments(in_dir, out_dir, seq_gen_path, model, len_seq):
@@ -10,7 +12,7 @@ def simulate_alignments(in_dir, out_dir, seq_gen_path, model, len_seq):
 
     trees=[item[:-4] for item in os.listdir(in_dir) if item[-4:]=='.nwk']
 
-    for tree in trees:
+    for tree in tqdm(trees):
         in_path=os.path.join(in_dir,tree+'.nwk')
         out_path= os.path.join(out_dir, tree+'.fasta')
         bash_cmd = f"{seq_gen_path} -m{model} -q -of -l {len_seq} < {in_path} > {out_path}"
