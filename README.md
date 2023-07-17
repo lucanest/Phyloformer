@@ -27,7 +27,7 @@ This repository contains the scripts for [the paper](https://www.biorxiv.org/con
 
 The easiest way to install the software is by creating a virutal environment using conda/mamba and then installing this module locally:
 
-```bash
+```
 # Install mamba if you want to use it instead of conda
 conda install -n base -c conda-forge mamba
 
@@ -44,13 +44,13 @@ pip install .
 
 To check that the installation is successful one can run which will infer trees from the test alignments, using a pre-trained model, and save them in that directory
 
-```bash
+```
 predict testdata/alignments
 ```
 
 and then compare the true trees and their corresponding predictions:
 
-```bash
+```
 evaluate --true testdata/trees --predictions testdata/alignments
 ```
 
@@ -58,7 +58,7 @@ the printed mean normalized Robinson-Fould distance should be equal to 0.063.
 
 ## Using Phyloformer
 
-You can use `phyloformer` as a [library]() in you own python scripts, or through the command line tools that are made installed with the package when following [these steps](#install).
+You can use `phyloformer` as a [library](#todo) in you own python scripts, or through the command line tools that are made installed with the package when following [these steps](#install).
 
 ### Command line usage
 
@@ -90,7 +90,7 @@ To train the network one needs to simulate phylogenetic trees and alignments of 
 
 The trees can be generated with
 
-```bash
+```
 simulate_trees \
     --nleaves <number of leaves in each tree> (default 20) \
     --ntrees <number of trees> \
@@ -106,7 +106,7 @@ exponential (branch lenghts sampled from an exponential distribution with a $\la
 
 Therefore to train the network just as in the paper one can create the tree dataset simply with
 
-```bash
+```
 simulate_trees --ntrees 100000 -o <output directory>
 ```
 
@@ -116,7 +116,7 @@ Currently the supported sequence simulator is [Seq-Gen](http://tree.bio.ed.ac.uk
 
 The alignments can be generated with
 
-```bash
+```
 simulate_alignments \
     --input <input directory with the .nwk tree files>  \
     --output <output directory> \
@@ -129,7 +129,7 @@ the possible models of evolution being those supported by Seq-Gen.
 
 Again, to follow the paper one can just do
 
-```bash
+```
 simulate_alignments \
     --input <input directory with the .nwk tree files>  \
     --output <output directory> \
@@ -139,7 +139,7 @@ simulate_alignments \
 ### Creating a tensor dataset
 The trees and alignments then need to be converted to tensors:
 
-```bash
+```
 make_tensors \
     --treedir <input directory with the .nwk tree files> \
     --alidir <input directory with the corresponding .fasta alignment files>  \
@@ -149,12 +149,12 @@ make_tensors \
 ### Training the model
 Finally one can train their own phyloformer instance on the previously generated tensors. 
 
-```bash
+```
 train_phyloformer \
     --input <input directory with the training tensors> \
     --output <output directory where the models will be saved>  \
     --config <json configuration file with hyperparameters>  \
-    --load (optional) <path to model to train further>
+    --load <path to model to train further> (optional)
 ```
 
 A default configuration file is made available in [`config.json`](./config.json), i.e. the one used to train the model in the paper.
