@@ -84,7 +84,12 @@ def main():
     if out_dir != "." and not os.path.exists(out_dir):
         os.mkdir(out_dir)
 
-    device = "cuda" if torch.cuda.is_available() and args.gpu else "cpu"
+    device = "cpu"
+    if args.gpu and torch.cuda.is_available():
+        device = "cuda"
+    elif args.gpu and torch.backends.mps.is_available():
+        device = "mps"
+
 
     model = None
     if args.model.lower() == "seqgen":

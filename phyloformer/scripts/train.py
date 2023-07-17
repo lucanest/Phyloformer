@@ -122,10 +122,11 @@ def main():
     pprint(config)
     print()
 
-    device = (
-        "cuda" if config["device"] == "cuda" and torch.cuda.is_available() else "cpu"
-    )
-    print(f"Training will happen on device: {device}\n.")
+    device = "cpu"
+    if config.get("device") == "cuda" and torch.cuda.is_available():
+        device = "cuda"
+    elif config.get("device") == "mps" and torch.backends.mps.is_available():
+        device = "mps"
 
     identifier = (
         f"LR_{config['learning_rate']}_O_{config['optimizer']}_"
