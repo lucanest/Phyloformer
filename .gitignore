@@ -1,3 +1,6 @@
+# Ignore additional files in testdata
+testdata/alignments/*pf*
+
 simulations
 .DS_Store
 .vscode

@@ -1,1 +1,0 @@
-{"Bs": 4, "Epchs": 185, "Lr": 0.00039, "Opt": "Adam", "loss": "L2", "blocks":6, "folds":1,"heads":4,"hdim":64,"dropout":0.0,"amp":"true"}

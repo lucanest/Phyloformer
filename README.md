@@ -1,5 +1,3 @@
-
-
 <p align="center">
   <img src="https://github.com/lucanest/Phyloformer/blob/main/figures/phyloformer_color.png?raw=true">
 </p>
@@ -11,7 +9,6 @@
 - Laurent Jacob
 
 This repository contains the scripts for [the paper](https://www.biorxiv.org/content/10.1101/2022.06.24.496975v1):
-
 
 ```bibtex
 @article{Nesterenko2022phyloformer,
@@ -27,85 +24,143 @@ This repository contains the scripts for [the paper](https://www.biorxiv.org/con
 ![](https://github.com/lucanest/Phyloformer/blob/main/figures/sketch.png?raw=true)
 
 ## Install
-The easiest way to install the software is using mamba:
 
-```
+The easiest way to install the software is by creating a virutal environment using conda/mamba and then installing this module locally:
+
+```bash
+# Install mamba if you want to use it instead of conda
 conda install -n base -c conda-forge mamba
-mamba env create -f environment.yml
+
+# Clone the phyloformer repo
+git clone https://github.com/lucanest/Phyloformer.git && cd Phyloformer
+
+# Create the virtual env and install the phyloformer package inside
+conda create -n phylo python=3.9
 conda activate phylo
+pip install .
 ```
 
 ### Test run
-To check that the installation is successful one can run
 
+To check that the installation is successful one can run which will infer trees from the test alignments, using a pre-trained model, and save them in that directory
+
+```bash
+predict testdata/alignments
 ```
-python predict.py testdata/alignments
+
+and then compare the true trees and their corresponding predictions:
+
+```bash
+evaluate --true testdata/trees --predictions testdata/alignments
 ```
-and then 
-```
-python testdata/test.py
-```
+
 the printed mean normalized Robinson-Fould distance should be equal to 0.063.
 
+## Using Phyloformer
 
-## Usage
+You can use `phyloformer` as a [library]() in you own python scripts, or through the command line tools that are made installed with the package when following [these steps](#install).
 
-We provide the software as a ready to use tool for phylogenetic inference, one can simply run
+### Command line usage
+
+A description of how and why to use the different scripts is given below. A [quick reference](./cli_reference.md) is also available.
+
+#### Inferring trees
+
+If you just want to infer phylogenetic trees from alignments using a pre-trained instance of `phyloformer` you can use the `predict` script which should be installed in you virtual environment.
+
 ```
-python predict.py
+predict /path/to/alignments/directory
 ```
+
 providing as argument a directory containing multiple sequence protein alignments in .fasta format,
 the program will then predict a phylogenetic tree for each alignment and write them in Newick format in the same directory.
 
-If the user wishes to choose a different directory where the predictions will be saved he can specify it with the `--o` flag.
+If the user wishes to choose a different directory where the predictions will be saved he can specify it with the `-o` or `--output` flag.
 
-By default the Phyloformer model used for inference is the one trained on simulations based on the PAM model of evolution, a different model to use can be specified with the `--m` flag (the other one currently available being the one trained on [Evosimz](https://gitlab.com/ztzou/phydl/-/tree/master/evosimz) simulations).
+By default the Phyloformer model used for inference is the one trained on simulations based on the PAM model of evolution, a different model to use can be specified with the `-m` or `--model` flag.
+You can use a pretained model (either `seqgen` or [`evosimz`](https://gitlab.com/ztzou/phydl/-/tree/master/evosimz))  as well as your own trained phyloformer instances by specifying a path to a pytorch file containing the trained model. 
 
-Finally, if an NVIDIA gpu is available, `--gpu true` allows to exploit it offering a great speed up in inference.
+Finally, if an NVIDIA gpu is available, the `-g` or `--gpu` flag allows to exploit it offering a great speed up in inference. _(This flag will also work with M1 and M2 GPUs on newer Mac devices using the Metal API)_
 
 ## Simulations and training
 
 To train the network one needs to simulate phylogenetic trees and alignments of sequences evolving along them.
 
 ### Simulating the trees
+
 The trees can be generated with
+
+```bash
+simulate_trees \
+    --nleaves <number of leaves in each tree> (default 20) \
+    --ntrees <number of trees> \
+    --type <tree topology> (default uniform) \
+    --output <output directory> \
+    --branchlength <branch lenght distribution> (default uniform)
 ```
-python simulations/simulateTrees.py --nleaves <number of leaves in each tree> (default 20) --ntrees <number of trees> --type <tree topology> (default uniform) --o <output directory> --bl <branch lenght distribution> (default uniform)
-```
+
 The currently supported types of tree topologies are uniform (as in the paper, sampling uniformly from the tree topologies having nleaves), and birth-death (the tree is generated through a birth death process with a birth_rate of 1 and a death_rate of 0.5).
 
 The currently supported types of branch length distribution are uniform (as in the paper, branch lenghts sampled uniformly between 0.002 and 1), and
 exponential (branch lenghts sampled from an exponential distribution with a $\lambda$ parameter of 0.15)
 
 Therefore to train the network just as in the paper one can create the tree dataset simply with
+
+```bash
+simulate_trees --ntrees 100000 -o <output directory>
 ```
-python simulations/simulateTrees.py --ntrees 100000 --o <output directory>
-```
+
 ### Simulating the alignments
+
 Currently the supported sequence simulator is [Seq-Gen](http://tree.bio.ed.ac.uk/software/seqgen/)
 
 The alignments can be generated with
-```
-python simulations/simulateAlignments.py --i <input directory with the .nwk tree files>  --o <output directory> --l <length of the simulated sequences> (default 200) --sg <path to Seq-Gen-1.3.4/source/> --m <model of evolution> (default PAM)
+
+```bash
+simulate_alignments \
+    --input <input directory with the .nwk tree files>  \
+    --output <output directory> \
+    --length <length of the simulated sequences> (default 200) \
+    --seqgen <path to Seq-Gen-1.3.4/source/> \
+    --model <model of evolution> (default PAM)
 ```
 
 the possible models of evolution being those supported by Seq-Gen.
 
 Again, to follow the paper one can just do
 
+```bash
+simulate_alignments \
+    --input <input directory with the .nwk tree files>  \
+    --output <output directory> \
+    --seqgen <path to Seq-Gen-1.3.4/source/>
 ```
-python simulations/simulateAlignments.py --i <input directory with the .nwk tree files>  --o <output directory> --sg <path to Seq-Gen-1.3.4/source/>
-```
+
 ### Creating a tensor dataset
+The trees and alignments then need to be converted to tensors:
+
+```bash
+make_tensors \
+    --treedir <input directory with the .nwk tree files> \
+    --alidir <input directory with the corresponding .fasta alignment files>  \
+    --output <output directory>
 ```
-python training/make_tensors.py --treedir <input directory with the .nwk tree files> --alidir <input directory with the corresponding .fasta alignment files>  --o <output directory> 
-```
+
 ### Training the model
+Finally one can train their own phyloformer instance on the previously generated tensors. 
+
+```bash
+train_phyloformer \
+    --input <input directory with the training tensors> \
+    --output <output directory where the models will be saved>  \
+    --config <json configuration file with hyperparameters>  \
+    --load (optional) <path to model to train further>
 ```
-python training/train.py --i <input directory with the training tensors> --o <output directory where the models will be saved>  --c <json configuration file with hyperparameters>  --load (optional) <path to model to train further>
-```
-In the training directory one will find an example of configuration file, stdconfig.json, i.e. the one used to train the model in the paper.
+
+A default configuration file is made available in [`config.json`](./config.json), i.e. the one used to train the model in the paper.
+
 ## Reproducibility of the results in the paper
+
 The datasets simulated using Seq-Gen are available at:
 
 - PAM model: [https://plmbox.math.cnrs.fr/f/f5a2ed2667a841cba6f0/](https://plmbox.math.cnrs.fr/f/f5a2ed2667a841cba6f0/).

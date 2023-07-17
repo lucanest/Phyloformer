@@ -1,7 +1,7 @@
 """The phyloformer module contains the Phyloformer network as well as functions to 
 create and load instances of the network from disk
 """
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List, Tuple
 
 import skbio
 import torch
@@ -141,7 +141,7 @@ class AttentionNet(nn.Module):
 
         self.seq2pair = seq2pair.to(self.device)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, List[Any]]:
         """Doed a forward pass through the Phyloformer network
 
         Parameters
@@ -153,6 +153,8 @@ class AttentionNet(nn.Module):
         -------
         torch.Tensor
             Output tensor (shape 1\*n_pairs)
+        List[Any]
+            Attention maps
 
         Raises
         ------
@@ -204,7 +206,7 @@ class AttentionNet(nn.Module):
         # we finally get (batch_size,nb_pairs)
         out = torch.squeeze(torch.mean(out, dim=-1))
 
-        return out
+        return out, attentionmaps
 
     def _get_architecture(self) -> Dict[str, Any]:
         """Returns architecture parameters of the model
@@ -268,7 +270,7 @@ class AttentionNet(nn.Module):
 
         # Infer distances
         with torch.no_grad():
-            predictions = self(tensor.float())
+            predictions, _ = self(tensor.float())
         predictions = predictions.view(self.n_pairs)
 
         # Build distance matrix
