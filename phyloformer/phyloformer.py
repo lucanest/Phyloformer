@@ -12,6 +12,23 @@ from scipy.special import binom
 from phyloformer.attentions import KernelAxialMultiAttention
 
 
+def _seq2pair(n_seqs: int):
+    """Initialize Seq2Pair matrix"""
+    n_pairs = int(binom(n_seqs, 2))
+    seq2pair = torch.zeros(n_pairs, n_seqs)
+    k = 0
+    for i in range(n_seqs):
+        for j in range(i + 1, n_seqs):
+            seq2pair[k, i] = 1
+            seq2pair[k, j] = 1
+            k = k + 1
+    return seq2pair
+
+
+MAX_ALN_LEN = 300
+SEQ2PAIR = _seq2pair(MAX_ALN_LEN)
+
+
 class AttentionNet(nn.Module):
     """Phyloformer Network"""
 
@@ -24,7 +41,7 @@ class AttentionNet(nn.Module):
         device: str = "cpu",
         n_seqs: int = 20,
         seq_len: int = 200,
-        **kwargs
+        **kwargs,
     ):
         """Initializes internal Module state
 
@@ -121,25 +138,27 @@ class AttentionNet(nn.Module):
                             device=device,
                         ),
                     ],
-                    nn.Dropout(dropout)
+                    nn.Dropout(dropout),
                 )
             )
 
-    def _init_seq2pair(self, n_seqs: int, seq_len: int):
-        """Initialize Seq2Pair matrix"""
+    def _init_seq2pair(self, n_seqs: int, seq_len: Optional[int] = None):
+        """
+        Get the model seq2pair matrix from the global one
+        """
+        if n_seqs > MAX_ALN_LEN:
+            raise ValueError(f"n_seqs must be smaller or equal to {MAX_ALN_LEN}")
+
         self.n_seqs = n_seqs
-        self.seq_len = seq_len
+        if seq_len is not None:
+            self.seq_len = seq_len
         self.n_pairs = int(binom(n_seqs, 2))
 
-        seq2pair = torch.zeros(self.n_pairs, self.n_seqs)
-        k = 0
-        for i in range(self.n_seqs):
-            for j in range(i + 1, self.n_seqs):
-                seq2pair[k, i] = 1
-                seq2pair[k, j] = 1
-                k = k + 1
-
-        self.seq2pair = seq2pair.to(self.device)
+        # Retain n_seqs columns (sequences) and rows (pairs) that only
+        # involve these sequences. Arbitrarilly using the first
+        # columns, but any subset of n_seqs columns would do.
+        mask = (torch.norm(SEQ2PAIR[:, n_seqs:], dim=1) == 0).squeeze()
+        self.seq2pair = SEQ2PAIR[mask, :n_seqs].to(self.device)
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, List[Any]]:
         """Doed a forward pass through the Phyloformer network
@@ -397,7 +416,7 @@ def load_state_dict(
     device: str = "cpu",
     dropout: float = 0.0,
     single_gpu=True,
-    **kwargs
+    **kwargs,
 ) -> AttentionNet:
     """This function loads a pre-trained phyloformer model to be used for inference
     or fine-tuning, from a file containing the state dict. The user must specify the
