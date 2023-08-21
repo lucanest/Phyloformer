@@ -160,7 +160,9 @@ class AttentionNet(nn.Module):
         mask = (torch.norm(SEQ2PAIR[:, n_seqs:], dim=1) == 0).squeeze()
         self.seq2pair = SEQ2PAIR[mask, :n_seqs].to(self.device)
 
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, List[Any]]:
+    def forward(
+        self, x: torch.Tensor, mask: Optional[torch.Tensor] = None
+    ) -> Tuple[torch.Tensor, List[Any]]:
         """Doed a forward pass through the Phyloformer network
 
         Parameters
@@ -180,11 +182,30 @@ class AttentionNet(nn.Module):
         ValueError
             If the tensors aren't the right shape
         """
+
+        # Lets assume that the mask has dimension (batch_size * n_seqs)
+
+        print(f"Input TENSOR: {x.shape}")
         attentionmaps = []
         # 2D convolution that gives us the features in the third dimension
         # (i.e. initial embedding of each amino acid)
+
         out = self.block_1_1(x)
+        print(f"First Block: {out.shape}")
+
         out = torch.matmul(self.seq2pair, out.transpose(-1, -2))  # pair representation
+        print(f"Pair representation: {out.shape}")
+
+        pair_mask = None
+        if mask is not None:
+            print(f"Mask: {mask.shape}")
+            # pair_mask of shape (batch_size * n_pairs)
+            pair_mask = (
+                (torch.matmul(self.seq2pair, mask.transpose(-1, -2)) == 2)
+                .float()
+                .transpose(0, 1)
+            )
+            print(f"Pair_mask: {pair_mask.shape}")
 
         # From here on the tensor has shape (batch_size,features,nb_pairs,seq_len), all
         # the transpose/permute allow to apply layernorm and attention over the desired
@@ -192,40 +213,56 @@ class AttentionNet(nn.Module):
         # of dimensions
 
         out = self.norm(out.transpose(-1, -3)).transpose(-1, -3)  # layernorm
+        print(f"First LayerNorm: {out.shape}")
 
         for i in range(self.n_blocks):
+            print()
             # AXIAL ATTENTIONS BLOCK
             # ----------------------
             # ROW ATTENTION
             att, a = self.rowAttentions[i](out.permute(0, 2, 3, 1))
+            print(f"\tRow attention {(i)}: {att.shape}")
             out = att.permute(0, 3, 1, 2) + out  # row attention+residual connection
+            print(f"\t+Residual {(i)}: {out.shape}")
             out = self.layernorms[i](out.transpose(-1, -3)).transpose(
                 -1, -3
             )  # layernorm
+            print(f"\t+Layer Norm {(i)}: {out.shape}")
 
             # COLUMN ATTENTION
-            att, a = self.columnAttentions[i](out.permute(0, 3, 2, 1))
+            att, a = self.columnAttentions[i](out.permute(0, 3, 2, 1), mask=pair_mask)
+            print(f"\tCol attention {(i)}: {att.shape}")
 
             attentionmaps.append(a)
             out = att.permute(0, 3, 2, 1) + out  # column attention+residual connection
+            print(f"\t+Residual {(i)}: {out.shape}")
             out = self.layernorms[i](out.transpose(-1, -3)).transpose(
                 -1, -3
             )  # layernorm
+            print(f"\t+Layer Norm {(i)}: {out.shape}")
 
             # FEEDFORWARD
             out = self.fNNs[i](out) + out
+            print(f"\t+FNN {(i)}: {out.shape}")
             if i != self.n_blocks - 1:
                 out = self.layernorms[i](out.transpose(-1, -3)).transpose(
                     -1, -3
                 )  # layernorm
+                print(f"\t+Final Layer Norm {i}: {out.shape}")
 
+        print()
         # After this last convolution we have (batch_size,1,nb_pairs,seq_len)
         out = self.pwFNN(out)
+        print(f"PwFNN: {out.shape}")
         # Averaging over positions and removing the extra dimensions
         # we finally get (batch_size,nb_pairs)
         out = torch.squeeze(torch.mean(out, dim=-1))
+        print(f"Final shape: {out.shape}")
 
-        return out, attentionmaps
+        # return out, attentionmaps
+        del attentionmaps
+
+        return out
 
     def _get_architecture(self) -> Dict[str, Any]:
         """Returns architecture parameters of the model
