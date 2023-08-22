@@ -183,7 +183,7 @@ class AttentionNet(nn.Module):
             If the tensors aren't the right shape
         """
 
-        # Lets assume that the mask has dimension (batch_size * n_seqs)
+        # Lets assume that the mask has dimension (batch_size * seq_len * n_seqs)
 
         print(f"Input TENSOR: {x.shape}")
         attentionmaps = []
@@ -199,12 +199,10 @@ class AttentionNet(nn.Module):
         pair_mask = None
         if mask is not None:
             print(f"Mask: {mask.shape}")
-            # pair_mask of shape (batch_size * n_pairs)
+            # pair_mask of shape (batch_size * n_pairs * seq_len)
             pair_mask = (
-                (torch.matmul(self.seq2pair, mask.transpose(-1, -2)) == 2)
-                .float()
-                .transpose(0, 1)
-            )
+                torch.matmul(self.seq2pair, mask.transpose(-1, -2)) == 2
+            ).float()
             print(f"Pair_mask: {pair_mask.shape}")
 
         # From here on the tensor has shape (batch_size,features,nb_pairs,seq_len), all
@@ -220,7 +218,7 @@ class AttentionNet(nn.Module):
             # AXIAL ATTENTIONS BLOCK
             # ----------------------
             # ROW ATTENTION
-            att, a = self.rowAttentions[i](out.permute(0, 2, 3, 1))
+            att, a = self.rowAttentions[i](out.permute(0, 2, 3, 1), mask=pair_mask)
             print(f"\tRow attention {(i)}: {att.shape}")
             out = att.permute(0, 3, 1, 2) + out  # row attention+residual connection
             print(f"\t+Residual {(i)}: {out.shape}")
@@ -230,12 +228,15 @@ class AttentionNet(nn.Module):
             print(f"\t+Layer Norm {(i)}: {out.shape}")
 
             # COLUMN ATTENTION
-            att, a = self.columnAttentions[i](out.permute(0, 3, 2, 1), mask=pair_mask)
+            att, a = self.columnAttentions[i](
+                out.permute(0, 3, 2, 1),
+                mask=(pair_mask.transpose(-1, -2) if pair_mask is not None else None),
+            )
             print(f"\tCol attention {(i)}: {att.shape}")
 
             attentionmaps.append(a)
             out = att.permute(0, 3, 2, 1) + out  # column attention+residual connection
-            print(f"\t+Residual {(i)}: {out.shape}")
+            # print(f"\t+Residual {(i)}: {out.shape}")
             out = self.layernorms[i](out.transpose(-1, -3)).transpose(
                 -1, -3
             )  # layernorm
@@ -298,7 +299,10 @@ class AttentionNet(nn.Module):
         )
 
     def infer_dm(
-        self, X: torch.Tensor, ids: Optional[list[str]] = None
+        self,
+        X: torch.Tensor,
+        ids: Optional[list[str]] = None,
+        mask: Optional[torch.Tensor] = None,
     ) -> skbio.DistanceMatrix:
         """Infers a phylogenetic distance matrix from embedded alignment tensor
 
@@ -324,10 +328,19 @@ class AttentionNet(nn.Module):
         tensor = X[None, :, :]
         tensor = tensor.to(self.device)
 
+        if mask is not None:
+            mask = mask.to(self.device)[None, :, :]
+
         # Infer distances
         with torch.no_grad():
-            predictions, _ = self(tensor.float())
+            predictions = self(tensor.float(), mask=mask)
         predictions = predictions.view(self.n_pairs)
+
+        if mask is not None:
+            pair_mask = (torch.matmul(self.seq2pair, mask.transpose(-1, -2)) == 2).sum(
+                -1
+            ) != 0
+            predictions = predictions[pair_mask[-1]]
 
         # Build distance matrix
         nn_dist = {}
@@ -352,6 +365,7 @@ class AttentionNet(nn.Module):
         X: torch.Tensor,
         ids: Optional[list[str]] = None,
         dm: Optional[skbio.DistanceMatrix] = None,
+        mask: Optional[torch.Tensor] = None,
     ) -> Tree:
         """Infers a phylogenetic tree from an embedded alignment tensor
 
@@ -376,7 +390,7 @@ class AttentionNet(nn.Module):
         ValueError
             If the tensors aren't the right shape
         """
-        phyloformer_dm = dm if dm is not None else self.infer_dm(X, ids)
+        phyloformer_dm = dm if dm is not None else self.infer_dm(X, ids, mask=mask)
         nn_newick_str = skbio.tree.nj(phyloformer_dm, result_constructor=str)
 
         return Tree(nn_newick_str)

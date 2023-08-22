@@ -24,10 +24,43 @@ class KernelAxialMultiAttention(nn.Module):
         self.att_drop = nn.Dropout(dropout)
         self.proj_drop = nn.Dropout(dropout)
 
-    def forward(self, x, mask=None):
-        # Mask is in pair representation space so (batch_size *  n_pairs)
-        # Input is of shape (batch_size * n_pairs * seq_len * h_dim)
+    def forward2(self, x, mask=None):
+        # Get dimensions
+        B = x.shape[0]
+        M, T, C = x.shape[-3:]
+        N, D = self.n_heads, C // self.n_heads
 
+        queries = self.q_net(x).view(B, M, T, N, D).transpose(2, 3)
+        keys = self.k_net(x).view(B, M, T, N, D).transpose(2, 3)
+        values = self.v_net(x).view(B, M, T, N, D).transpose(2, 3)
+
+        # Apply feature map to queries and keys
+        Q = self.elu(queries) + 1
+        K = self.elu(keys) + 1
+
+        # Apply padding mask if it exists
+        if mask is not None:
+            # mask shape is [B,M,T], K shape is [B,M,N,T,D]
+            K = K * mask[:, :, None, :, None]
+
+        # Compute the KV matrix (in einsum d == e)
+        KV = torch.einsum("bmntd,bmnte->bmnde", K, values)
+
+        # Compute normalizer
+        Z = 1 / (torch.einsum("bmntd,bmnd->bmnt", Q, K.sum(-2)) + self.eps)
+
+        # Compute the new values
+        V = torch.einsum(
+            "bmntd,bmnde->bmtne", Z.unsqueeze(-1).expand(B, M, N, T, D), KV
+        )
+        # reshape values to concatenate along attention heads
+        V = V.contiguous().view(B, -1, T, N * D)
+
+        # V = torch.einsum("nlhd,nhmd,nlhm", Q, KV, Z)
+
+        return V.contiguous()
+
+    def forward(self, x, mask=None):
         print("\t\tIn Attention:")
         print(f"\t\t Input: {x.shape}")
         Bs = x.shape[0]
@@ -37,6 +70,8 @@ class KernelAxialMultiAttention(nn.Module):
         M, T, C = x.shape[-3:]
         N, D = self.n_heads, C // self.n_heads
 
+        print(f"\t\tB:{Bs}, M:{M}, T:{T}, C:{C}, N:{N}, D:{D}")
+
         q = self.q_net(x).view(Bs, M, T, N, D).transpose(2, 3)
         k = self.k_net(x).view(Bs, M, T, N, D).transpose(2, 3)
         v = self.v_net(x).view(Bs, M, T, N, D).transpose(2, 3)
@@ -44,25 +79,24 @@ class KernelAxialMultiAttention(nn.Module):
 
         q = self.elu(q) + 1
         k = self.elu(k) + 1
+        print(f"\t\tQ:{q.shape}, K: {k.shape}")
 
         # Transformers are RNNs linear attention paper adds the mask to the
         # K matrix in their implementation:
         # https://github.com/idiap/fast-transformers/blob/2ad36b97e64cb93862937bd21fcc9568d989561f/fast_transformers/attention/linear_attention.py#L67
-        # k   : Row(Bs * M * N * T * D), Col(Bs * T * N * M * D)
-        # mask: (Bs * M)
+        # mask: (Bs * M * T)
         if mask is not None:
             print(f"\t\t mask: {mask.shape}")
-            if mask.shape[-1] == M:  # Row attention
-                mask = mask[:, :, None, None, None]
-            else:  # Col attention
-                mask = mask[:, None, None, :, None]
+            mask = mask[:, :, None, :, None]
             print(f"\t\t mask..: {mask.shape}")
             print(f"\t\t k:      {k.shape}")
 
             k = k * mask
 
+        print(f"\t\tKt: {k.transpose(-1, -2).shape}")
         KtV = k.transpose(-1, -2) @ v
         print(f"\t\tKtV: {KtV.shape}")
+        print(f"\t\tKt.sum: {k.transpose(-1, -2).sum(dim=1, keepdim=True).shape}")
         Z = 1 / (q @ k.transpose(-1, -2).sum(dim=-1, keepdim=True) + self.eps)
         print(f"\t\tZ: {Z.shape}")
         Z = Z.expand(Bs, M, N, T, D)
