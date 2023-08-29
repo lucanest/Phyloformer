@@ -183,27 +183,21 @@ class AttentionNet(nn.Module):
             If the tensors aren't the right shape
         """
 
-        # Lets assume that the mask has dimension (batch_size * seq_len * n_seqs)
-
-        print(f"Input TENSOR: {x.shape}")
         attentionmaps = []
         # 2D convolution that gives us the features in the third dimension
         # (i.e. initial embedding of each amino acid)
 
         out = self.block_1_1(x)
-        print(f"First Block: {out.shape}")
 
         out = torch.matmul(self.seq2pair, out.transpose(-1, -2))  # pair representation
-        print(f"Pair representation: {out.shape}")
 
         pair_mask = None
+        # Lets assume that the mask has dimension (batch_size * seq_len * n_seqs)
         if mask is not None:
-            print(f"Mask: {mask.shape}")
             # pair_mask of shape (batch_size * n_pairs * seq_len)
             pair_mask = (
                 torch.matmul(self.seq2pair, mask.transpose(-1, -2)) == 2
             ).float()
-            print(f"Pair_mask: {pair_mask.shape}")
 
         # From here on the tensor has shape (batch_size,features,nb_pairs,seq_len), all
         # the transpose/permute allow to apply layernorm and attention over the desired
@@ -211,59 +205,51 @@ class AttentionNet(nn.Module):
         # of dimensions
 
         out = self.norm(out.transpose(-1, -3)).transpose(-1, -3)  # layernorm
-        print(f"First LayerNorm: {out.shape}")
 
         for i in range(self.n_blocks):
-            print()
             # AXIAL ATTENTIONS BLOCK
             # ----------------------
             # ROW ATTENTION
             att, a = self.rowAttentions[i](out.permute(0, 2, 3, 1), mask=pair_mask)
-            print(f"\tRow attention {(i)}: {att.shape}")
             out = att.permute(0, 3, 1, 2) + out  # row attention+residual connection
-            print(f"\t+Residual {(i)}: {out.shape}")
             out = self.layernorms[i](out.transpose(-1, -3)).transpose(
                 -1, -3
             )  # layernorm
-            print(f"\t+Layer Norm {(i)}: {out.shape}")
 
             # COLUMN ATTENTION
             att, a = self.columnAttentions[i](
                 out.permute(0, 3, 2, 1),
                 mask=(pair_mask.transpose(-1, -2) if pair_mask is not None else None),
             )
-            print(f"\tCol attention {(i)}: {att.shape}")
 
             attentionmaps.append(a)
             out = att.permute(0, 3, 2, 1) + out  # column attention+residual connection
-            # print(f"\t+Residual {(i)}: {out.shape}")
             out = self.layernorms[i](out.transpose(-1, -3)).transpose(
                 -1, -3
             )  # layernorm
-            print(f"\t+Layer Norm {(i)}: {out.shape}")
 
             # FEEDFORWARD
             out = self.fNNs[i](out) + out
-            print(f"\t+FNN {(i)}: {out.shape}")
             if i != self.n_blocks - 1:
                 out = self.layernorms[i](out.transpose(-1, -3)).transpose(
                     -1, -3
                 )  # layernorm
-                print(f"\t+Final Layer Norm {i}: {out.shape}")
 
-        print()
         # After this last convolution we have (batch_size,1,nb_pairs,seq_len)
         out = self.pwFNN(out)
-        print(f"PwFNN: {out.shape}")
+
         # Averaging over positions and removing the extra dimensions
         # we finally get (batch_size,nb_pairs)
-        out = torch.squeeze(torch.mean(out, dim=-1))
-        print(f"Final shape: {out.shape}")
+        if pair_mask is not None:
+            out = (
+                torch.sum(out * pair_mask[:, None, :, :], dim=-1)
+                / torch.sum(pair_mask, dim=-1)[:, None, :]
+            )
+            out = torch.squeeze(out)
+        else:
+            out = torch.squeeze(torch.mean(out, dim=-1))
 
-        # return out, attentionmaps
-        del attentionmaps
-
-        return out
+        return out, attentionmaps
 
     def _get_architecture(self) -> Dict[str, Any]:
         """Returns architecture parameters of the model
@@ -333,8 +319,8 @@ class AttentionNet(nn.Module):
 
         # Infer distances
         with torch.no_grad():
-            predictions = self(tensor.float(), mask=mask)
-        predictions = predictions.view(self.n_pairs)
+            predictions, _ = self(tensor.float(), mask=mask)
+        predictions, _ = predictions.view(self.n_pairs)
 
         if mask is not None:
             pair_mask = (torch.matmul(self.seq2pair, mask.transpose(-1, -2)) == 2).sum(
@@ -342,11 +328,17 @@ class AttentionNet(nn.Module):
             ) != 0
             predictions = predictions[pair_mask[-1]]
 
+        n_seqs = int(
+            self.n_seqs if mask is None else torch.squeeze(mask.sum(-1))[0].int().item()
+        )
+
+        print(f"predicting with {n_seqs} from {self.n_seqs}")
+
         # Build distance matrix
         nn_dist = {}
         cursor = 0
-        for i in range(self.n_seqs):
-            for j in range(self.n_seqs):
+        for i in range(n_seqs):
+            for j in range(n_seqs):
                 if i == j:
                     nn_dist[(i, j)] = 0
                 if i < j:
@@ -356,7 +348,7 @@ class AttentionNet(nn.Module):
                     cursor += 1
 
         return skbio.DistanceMatrix(
-            [[nn_dist[(i, j)] for j in range(self.n_seqs)] for i in range(self.n_seqs)],
+            [[nn_dist[(i, j)] for j in range(n_seqs)] for i in range(n_seqs)],
             ids=ids,
         )
 

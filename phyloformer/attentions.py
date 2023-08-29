@@ -4,8 +4,6 @@ in the Phyloformer network
 
 import torch
 import torch.nn as nn
-import math
-from torch.nn import functional as F
 
 
 class KernelAxialMultiAttention(nn.Module):
@@ -24,7 +22,7 @@ class KernelAxialMultiAttention(nn.Module):
         self.att_drop = nn.Dropout(dropout)
         self.proj_drop = nn.Dropout(dropout)
 
-    def forward2(self, x, mask=None):
+    def einsum_forward(self, x, mask=None):
         # Get dimensions
         B = x.shape[0]
         M, T, C = x.shape[-3:]
@@ -56,13 +54,9 @@ class KernelAxialMultiAttention(nn.Module):
         # reshape values to concatenate along attention heads
         V = V.contiguous().view(B, -1, T, N * D)
 
-        # V = torch.einsum("nlhd,nhmd,nlhm", Q, KV, Z)
-
         return V.contiguous()
 
     def forward(self, x, mask=None):
-        print("\t\tIn Attention:")
-        print(f"\t\t Input: {x.shape}")
         Bs = x.shape[0]
 
         # M:n_pairs, T:seq_len, C:h_dim, N:n_heads, D:h_dim/n_heads (For row attn)
@@ -70,41 +64,27 @@ class KernelAxialMultiAttention(nn.Module):
         M, T, C = x.shape[-3:]
         N, D = self.n_heads, C // self.n_heads
 
-        print(f"\t\tB:{Bs}, M:{M}, T:{T}, C:{C}, N:{N}, D:{D}")
-
         q = self.q_net(x).view(Bs, M, T, N, D).transpose(2, 3)
         k = self.k_net(x).view(Bs, M, T, N, D).transpose(2, 3)
         v = self.v_net(x).view(Bs, M, T, N, D).transpose(2, 3)
-        print(f"\t\tq: {q.shape}, k: {k.shape}, v: {v.shape}")
 
         q = self.elu(q) + 1
         k = self.elu(k) + 1
-        print(f"\t\tQ:{q.shape}, K: {k.shape}")
 
         # Transformers are RNNs linear attention paper adds the mask to the
-        # K matrix in their implementation:
+        # K matrix in their implementation:i
         # https://github.com/idiap/fast-transformers/blob/2ad36b97e64cb93862937bd21fcc9568d989561f/fast_transformers/attention/linear_attention.py#L67
         # mask: (Bs * M * T)
         if mask is not None:
-            print(f"\t\t mask: {mask.shape}")
             mask = mask[:, :, None, :, None]
-            print(f"\t\t mask..: {mask.shape}")
-            print(f"\t\t k:      {k.shape}")
 
             k = k * mask
 
-        print(f"\t\tKt: {k.transpose(-1, -2).shape}")
         KtV = k.transpose(-1, -2) @ v
-        print(f"\t\tKtV: {KtV.shape}")
-        print(f"\t\tKt.sum: {k.transpose(-1, -2).sum(dim=1, keepdim=True).shape}")
         Z = 1 / (q @ k.transpose(-1, -2).sum(dim=-1, keepdim=True) + self.eps)
-        print(f"\t\tZ: {Z.shape}")
         Z = Z.expand(Bs, M, N, T, D)
-        print(f"\t\tZ..: {Z.shape}")
-        V = Z @ KtV
-        print(f"\t\tV: {V.shape}")
+        V = Z @ KtV  # Potentially missing a Q term here ?
         V = V.transpose(2, 3).contiguous().view(Bs, -1, T, N * D)
-        print(f"\t\tV..: {V.shape}")
 
         a = None
         out = self.proj_drop(self.proj_net(V))
