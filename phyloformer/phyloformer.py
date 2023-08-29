@@ -191,8 +191,10 @@ class AttentionNet(nn.Module):
 
         out = torch.matmul(self.seq2pair, out.transpose(-1, -2))  # pair representation
 
+        # If it is specified, the mask has dimension (batch_size * seq_len * n_seqs)
+        # With 1 in positions where there is a valid AA and 0 where there is padding
+        # In one or both of the 2 alignment dimensions.
         pair_mask = None
-        # Lets assume that the mask has dimension (batch_size * seq_len * n_seqs)
         if mask is not None:
             # pair_mask of shape (batch_size * n_pairs * seq_len)
             pair_mask = (
