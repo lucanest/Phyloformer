@@ -54,10 +54,17 @@ All the named phyloformer models in the manuscript are given in the [`models`](.
 - `PF_Cherry` fine-tuned from PF_Base with an MAE loss on CherryML data
 - `PF_SelReg` fine-tuned from PF_Base with an MAE loss on SelReg data
 
-Use the `infer_alns.py` script to infer some distance matrices from alignments using a trained Phyloformer model
+Use the [`infer_alns.py`](./infer_alns.py) script to infer some distance matrices from alignments using a trained Phyloformer model
 
 ### Training your own models
-Use the `train_distributed` script to train a PF model on some data
+
+#### Simulating data
+Simulate trees with [`SimulateAlterRescale.py`](./SimulateAlterRescale.py), if you want to simulate alignment with alisim use [`alisim.py`](./alisim.py). 
+If you want to use Cherry to simulate alignments use the [`TODO`](todo). 
+
+#### Running the training
+Use the [`train_distributed`](./train_distributed.py) script to train or fine-tune a PF model on some data (Need lightning, will work on a SLURM env)
 
 ### Re-producing figures
-Use the `make_plots` script to reproduce all paper figures. Link to donwload results data first (quite large...)
+Use the [`make_plots`](./make_plots.py) script to reproduce all paper figures. Link to donwload results data first (quite large...) ***TODO***
+
