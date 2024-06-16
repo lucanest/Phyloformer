@@ -14,8 +14,10 @@ from tqdm import tqdm
 ALPHABET = b"ARNDCQEGHILKMFPSTWYVX-"
 LOOKUP = {char: index for index, char in enumerate(ALPHABET)}
 
+
 def MRE_loss(*args, **kwargs):
     pass
+
 
 def load_alignment(filepath):
     sequences, ids = [], []
@@ -271,28 +273,30 @@ class AxialLinearTransformer(nn.Module):
 
     def __init__(
         self,
-        n_blocks: int = 6,
-        n_heads: int = 4,
-        h_dim: int = 64,
+        nb_blocks: int = 6,
+        nb_heads: int = 4,
+        embed_dim: int = 64,
         dropout: float = 0.0,
         n_seqs: int = 20,
         seq_len: int = 200,
         normalize: bool = True,
         heterodims: bool = False,
+        device: str = "cpu",
         **kwargs,
     ):
         super().__init__()
-        self.nb_blocks = n_blocks
-        self.nb_heads = n_heads
-        self.embed_dim = h_dim
+        self.nb_blocks = nb_blocks
+        self.nb_heads = nb_heads
+        self.embed_dim = embed_dim
         self.dropout = dropout
         self.normalize = normalize
         self.heterodims = heterodims
+        self.device = device
 
         self.n_seqs = n_seqs
         self.seq_len = seq_len
 
-        self.register_buffer("seq2pair", self._init_seq2pair(20))
+        self._init_seq2pair(20)
 
         self.embedding_block = nn.Sequential(
             nn.Conv2d(
@@ -351,10 +355,7 @@ class AxialLinearTransformer(nn.Module):
 
         self.n_seqs = n_seqs
         self.n_pairs = int(binom(n_seqs, 2))
-
-        mat = adaptable_seq2pair(n_seqs, SEQ2PAIR)
-
-        return mat
+        self.seq2pair = adaptable_seq2pair(n_seqs, SEQ2PAIR).to(self.device)
 
 
 if __name__ == "__main__":
@@ -368,18 +369,22 @@ if __name__ == "__main__":
         required=False,
         help="Path to output distance matrix",
     )
-    parser.add_argument(
-        "--trees", "-t", action="store_true", help="Output NJ tres"
-    )
+    parser.add_argument("--trees", "-t", action="store_true", help="Output NJ trees")
     args = parser.parse_args()
 
     if args.trees:
         from skbio import DistanceMatrix
         from skbio.tree import nj
 
+    device = "cpu"
+    if torch.cuda.is_available():
+        device = "cuda"
+
     # Loading model Which means we don't need lightning anymore
-    ckpt = torch.load(args.checkpoint)
-    model = AxialLinearTransformer(**ckpt["hyper_parameters"])
+    ckpt = torch.load(args.checkpoint, map_location=device)
+    params = ckpt["hyper_parameters"]
+    params["device"] = device
+    model = AxialLinearTransformer(**params)
     model.load_state_dict(
         {
             k.replace("model.", ""): v
@@ -389,78 +394,49 @@ if __name__ == "__main__":
         strict=False,
     )
 
-    device = "cpu"
-    if torch.cuda.is_available():
-        device = "cuda"
-
+    # Move model to correct place
     model = model.to(device)
     model.eval()
-
-    N_CPUS = int(os.environ.get("SLURM_CPUS_PER_TASK", 4))
 
     # Path to dirs
     in_dir = os.path.abspath(args.alignments)
     out_dir = os.path.abspath(args.output_dir)
 
-    # Create output directories
-    os.makedirs(os.path.join(out_dir, "matrices"), exist_ok=True)
-    os.makedirs(os.path.join(out_dir, "times_pf"), exist_ok=True)
-    if args.trees:
-        os.makedirs(os.path.join(out_dir, "NJ"), exist_ok=True)
-
-    def alnkey(path):
-        i, t, _, l  = Path(path).stem.split("_")
-        return (int(t), int(l), i)
+    # Create output directory
+    os.makedirs(out_dir, exist_ok=True)
 
     with torch.no_grad():
         prev_shape = None
-        for alnpath in tqdm(sorted(glob(f"{in_dir}/*.fa"), key=alnkey, reverse=True)):
+        for alnpath in tqdm(glob(f"{in_dir}/*")):
+
+            # Check if path has FASTA extension
+            if not (
+                alnpath.lower().endswith(".fa") or alnpath.lower().endswith(".fasta")
+            ):
+                raise ValueError(
+                    "Input files must be fasta files (.fa or .fasta). Got " f"{alnpath}"
+                )
 
             stem = Path(alnpath).stem
-            timepath = os.path.join(out_dir, "times_pf", f"{stem}.time")
-            matpath = os.path.join(out_dir, "matrices", f"{stem}.phy")
-            treepath = os.path.join(out_dir, "NJ", f"{stem}.nwk")
+            matpath = os.path.join(out_dir, f"{stem}.phy")
+            treepath = os.path.join(out_dir, f"{stem}.nj.nwk")
 
-            # Skip already inferred trees
-            if os.path.exists(timepath) and os.path.exists(matpath) and (not args.trees or os.path.exists(treepath)):
-                    continue
-
-            # Reset peak memory stats
-            torch.cuda.reset_peak_memory_stats()
-
-            # Start time measurement
-            start = time()
-
-            # All of this is very hacky...
             aln, ids = load_alignment(alnpath)
+            # Set seq2pair matrix
             if prev_shape is None or prev_shape != aln.shape[-1]:
-                model.seq2pair = model._init_seq2pair(aln.shape[-1]).to(
-                    device, non_blocking=True
-                )
+                model._init_seq2pair(aln.shape[-1])
                 prev_shape = aln.shape[-1]
+
+            # Predict distance matrix
             preds = model(aln[None, :].to(device).float())
 
+            # Write distance matrix to disk
             dm, phylip = vec_to_phylip(preds, ids)
             with open(matpath, "w") as outfile:
                 outfile.write(phylip)
 
+            # Write tree to disk if needed
             if args.trees:
                 dm = DistanceMatrix(dm.cpu().detach().numpy(), ids=ids)
                 with open(treepath, "w") as outfile:
                     outfile.write(nj(dm, result_constructor=str))
-
-            # End time measurement
-            elapsed = time() - start
-            mins = int(elapsed // 60)
-            secs = elapsed % 60
-
-            # Measure memory
-            mem_peak = torch.cuda.max_memory_allocated()
-
-            # Write stats to file
-            with open(timepath, "w") as out:
-                out.write(
-                    f"Inference being timed: {alnpath}\n"
-                    f"\tElapsed (wall clock) time (h:mm:ss or m:ss): {mins}:{secs:.5f}\n"
-                    f"\tMaximum resident set size (kbytes): {mem_peak / 1024}"
-                ) 
