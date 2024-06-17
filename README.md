@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/lucanest/Phyloformer/blob/main/figures/phyloformer_color.png?raw=true">
+  <img src="./figures/phyloformer_color.png">
 </p>
 
 # Phyloformer: towards fast, accurate and versatile phylogenetic reconstruction with deep neural networks
@@ -9,7 +9,7 @@
 - Bastien Boussau
 - Laurent Jacob
 
-This repository contains the scripts for [the paper]():
+This repository contains the scripts for [the paper](todo):
 
 ```bibtex
 @article{Nesterenko2024phyloformer,
@@ -29,6 +29,8 @@ It can be used to infer alignments under a selection of evolutionary models: LG+
 selection. 
 
 ## Running Phyloformer
+You can read below for some example usage and explanations but if you just want the CLI reference of the available scripts you 
+can see them in the [`cli_reference.md`](./cli_reference.md) file.
 
 ### Installing dependencies
 
@@ -76,7 +78,7 @@ cd Phyloformer && conda activate phylo
 
 # Infer distance matrices using the LG+GC PF model 
 # (This will automatically use a CUDA GPU if available, otherwise it will use the CPU)
-python infer_alns.py -o data/testdata/pf_matrices data/testdata/msas
+python infer_alns.py -o data/testdata/pf_matrices models/pf.ckpt data/testdata/msas
 
 # Infer trees with FastME
 mkdir data/testdata/pf_trees
@@ -90,10 +92,11 @@ for file in data/testdata/pf_matrices/*; do
 done
 
 # Compare trees 
-phylocompare -t -n -o data/cmp data/testdata/trees data/testdata/pf_trees
+./bin/bin_linux/phylocompare -t -n -o data/cmp data/testdata/trees data/testdata/pf_trees
 
-# Check the average normalized KF score
-TODO...
+# Compute the average KF distance 
+# It should output '0.333'
+cat data/cmp_topo.csv | awk 'BEGIN {FS=","} NR>1{sum += $5; n+=1} END {printf "%.3f\n", sum/n}'
 ```
 
 

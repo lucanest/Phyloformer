@@ -3,6 +3,8 @@
 ## Inferring trees
 
 ```shell
+> python infer_alns.py --help
+
 usage: Infer evolutionnary distances with PhyloFormer [-h] [--output-dir OUTPUT_DIR] [--trees] checkpoint alignments
 
 positional arguments:
@@ -19,6 +21,8 @@ optional arguments:
 ## Training a model
 
 ```shell
+> python train_distributed.py --help
+
 usage: train PF instance [-h] --train-trees TRAIN_TREES --train-alignments TRAIN_ALIGNMENTS [--val-trees VAL_TREES]
                          [--val-alignments VAL_ALIGNMENTS] [--dropout DROPOUT] [--nb-blocks NB_BLOCKS] [--embed-dim EMBED_DIM]
                          [--nb-heads NB_HEADS] [--nb-epochs NB_EPOCHS] [--max-steps MAX_STEPS] [--warmup-steps WARMUP_STEPS]
@@ -84,6 +88,8 @@ optional arguments:
 ## Simulating trees
 
 ```shell
+> python simulate_trees.py --help
+
 usage: simulate_trees.py [-h] [-n NTREES] [-t NTIPS] [--type {birth-death,uniform}] [-o OUTPUT] [--verbose VERBOSE]
 
 optional arguments:
@@ -102,6 +108,8 @@ optional arguments:
 ## Simulating alignments
 
 ```shell
+> python alisim.py --help
+
 usage: Alignment simulator [-h] [--outdir OUTDIR] [--length LENGTH] [--gamma GAMMA] [--substitution SUBSTITUTION]
                            [--custom-model CUSTOM_MODEL] [--no-summary] [--allow-duplicate-sequences] [--keep-logfiles]
                            [--max-attempts MAX_ATTEMPTS] [--processes PROCESSES]

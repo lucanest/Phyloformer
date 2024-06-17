@@ -2,8 +2,8 @@
 data/
 
 # Keep test case trees and MSAs 
-!data/testdata/alignments/
-!data/testdata/trees/
+!data/testdata/msas/*
+!data/testdata/trees/*
 
 simulations
 .DS_Store
