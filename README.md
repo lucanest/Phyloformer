@@ -34,9 +34,9 @@ can see them in the [`cli_reference.md`](./cli_reference.md) file.
 
 ### Installing dependencies
 
-The easiest way to install the software is by creating a virutal environment using conda/mamba and then installing this module locally:
+The easiest way to install the software is by creating a virutal environment using conda/mamba and then installing dependencies in it:
 
-```
+```shell
 # Install mamba if you want to use it instead of conda
 conda install -n base -c conda-forge mamba
 
@@ -131,7 +131,7 @@ python alisim.py \
 
 ### Training a Phyloformer model
 Use the [`train_distributed`](./train_distributed.py) script to train or fine-tune a PF model on some data (Need lightning, will work on a SLURM env)
-```shell
+```
 TODO Add instructions for this
 ```
 
