@@ -34,7 +34,7 @@ can see them in the [`cli_reference.md`](./cli_reference.md) file.
 
 ### Installing dependencies
 
-The easiest way to install the software is by creating a virutal environment using conda/mamba and then installing dependencies in it:
+The easiest way to install the software is by creating a virtual environment using conda/mamba and then installing dependencies in it:
 
 ```shell
 # Install mamba if you want to use it instead of conda
@@ -51,7 +51,7 @@ pip install -r requirements.txt
 Some pre-built binaries are included in this repo both for [linux](./bin/bin_linux/) and [macos](./bin/bin_macos/), these include:
 - [`IQTree`](http://www.iqtree.org): for inferring maximum likelihood (ML) trees and simulating alignments *(For the alignment simulation to work you should use IQTree v2.0.0)*
 - [`FastTree`](http://www.microbesonline.org/fasttree/): for inferring ML-like trees
-- [`FastME`](https://gite.lirmm.fr/atgc/FastME): for inferring trees from distance matrics (such as the ones produced by phyloformer)
+- [`FastME`](https://gite.lirmm.fr/atgc/FastME): for inferring trees from distance matrices (such as the ones produced by phyloformer)
 - [`goalign`](https://github.com/evolbioinfo/goalign): for manipulating alignments
 - [`phylotree`](https://github.com/lucblassel/phylotree-rs): for manipulating newick formatted phylogenetic trees
 - [`phylocompare`](https://github.com/lucblassel/phylocompare): for batch comparison of newick formatted phylogenetic trees
@@ -71,7 +71,7 @@ All the named phyloformer models in the manuscript are given in the [`models`](.
 
 Use the [`infer_alns.py`](./infer_alns.py) script to infer some distance matrices from alignments using a trained Phyloformer model
 
-Let's use the small test set given along with this repo to test out Phloformer. 
+Let's use the small test set given along with this repo to test out Phyloformer. 
 ```shell
 # First make sure you are in the repo and have the correct conda env
 cd Phyloformer && conda activate phylo
