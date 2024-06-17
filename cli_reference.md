@@ -3,136 +3,133 @@
 ## Inferring trees
 
 ```shell
-usage: predict [-h] [-o OUTPUT] [-m MODEL] [-g] [-d] alidir
-
-Predict phylogenetic trees from MSAs using the Phyloformer neural network
+usage: Infer evolutionnary distances with PhyloFormer [-h] [--output-dir OUTPUT_DIR] [--trees] checkpoint alignments
 
 positional arguments:
-  alidir                path to input directory containing the .fasta
-                        alignments
+  checkpoint            Path to model checkpoint to use
+  alignments            Path to alignment to infer tree for
 
 optional arguments:
   -h, --help            show this help message and exit
-  -o OUTPUT, --output OUTPUT
-                        path to the output directory were the .tree tree files
-                        will be saved (default: alidir)
-  -m MODEL, --model MODEL
-                        path to the NN model's state dictionary. Possible
-                        values are: [seqgen, evosimz, <path/to/model.pt>]
-                        (default: seqgen)
-  -g, --gpu             use the GPU for inference (default: false)
-  -d, --dm              save predicted distance matrix (default: false)
+  --output-dir OUTPUT_DIR, -o OUTPUT_DIR
+                        Path to output distance matrix
+  --trees, -t           Output NJ trees
 ```
 
 ## Training a model
 
 ```shell
-usage: train_phyloformer [-h] -i INPUT [-v VALIDATION] -c CONFIG [-o OUTPUT]
-                         [-l CHECKPOINT] [-g {tensorboard,file,both}]
-                         [--logfile LOGFILE]
-
-Train a phyloformer model
+usage: train PF instance [-h] --train-trees TRAIN_TREES --train-alignments TRAIN_ALIGNMENTS [--val-trees VAL_TREES]
+                         [--val-alignments VAL_ALIGNMENTS] [--dropout DROPOUT] [--nb-blocks NB_BLOCKS] [--embed-dim EMBED_DIM]
+                         [--nb-heads NB_HEADS] [--nb-epochs NB_EPOCHS] [--max-steps MAX_STEPS] [--warmup-steps WARMUP_STEPS]
+                         [--learning-rate LEARNING_RATE] [--batch-size BATCH_SIZE] [--output-dir OUTPUT_DIR]
+                         [--train-regex TRAIN_REGEX] [--val-regex VAL_REGEX] [--load-checkpoint LOAD_CHECKPOINT]
+                         [--check-val-every CHECK_VAL_EVERY] [--log-every LOG_EVERY] [--no-improvement-stop NO_IMPROVEMENT_STOP]
+                         [--hard-loss-ceiling HARD_LOSS_CEILING] [--find-batch-size] [--project-name PROJECT_NAME]
+                         [--run-name RUN_NAME] [--profile]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -i INPUT, --input INPUT
-                        /path/ to input directory containing the the tensor
-                        pairs on which the model will be trained
-  -v VALIDATION, --validation VALIDATION
-                        /path/ to input directory containing the the tensor
-                        pairs on which the model will be evaluated. If left
-                        empty 10% of the training set will be used as
-                        validation data.
-  -c CONFIG, --config CONFIG
-                        /path/ to the configuration json file for the
-                        hyperparameters
-  -o OUTPUT, --output OUTPUT
-                        /path/ to output directory where the model parameters
-                        and the metrics will be saved (default: current
-                        directory)
-  -l CHECKPOINT, --load CHECKPOINT
-                        Load training checkpoint
-  -g {tensorboard,file,both}, --log {tensorboard,file,both}
-                        How to log training process
-  --logfile LOGFILE     path to save log at
-
+  --train-trees TRAIN_TREES, -t TRAIN_TREES
+                        Directory with training trees (default: None)
+  --train-alignments TRAIN_ALIGNMENTS, -a TRAIN_ALIGNMENTS
+                        Directory with training alignments (default: None)
+  --val-trees VAL_TREES, -T VAL_TREES
+                        Directory with validation trees (default: None)
+  --val-alignments VAL_ALIGNMENTS, -A VAL_ALIGNMENTS
+                        Directory with validation alignments (default: None)
+  --dropout DROPOUT, -D DROPOUT
+                        Dropout proportion (default: 0.0)
+  --nb-blocks NB_BLOCKS, -b NB_BLOCKS
+                        Number of PF blocks (default: 6)
+  --embed-dim EMBED_DIM, -d EMBED_DIM
+                        Number of embedding dimensions (default: 64)
+  --nb-heads NB_HEADS, -H NB_HEADS
+                        Number of attention heads (default: 4)
+  --nb-epochs NB_EPOCHS, -e NB_EPOCHS
+                        Number of epochs to train for (default: 100)
+  --max-steps MAX_STEPS, -m MAX_STEPS
+                        Max number of training steps (default: None)
+  --warmup-steps WARMUP_STEPS, -w WARMUP_STEPS
+                        Number of warmup steps (default: 5000)
+  --learning-rate LEARNING_RATE, -l LEARNING_RATE
+                        Traget starting learning rate (default: 0.0001)
+  --batch-size BATCH_SIZE, -s BATCH_SIZE
+                        Training batch size (default: 4)
+  --output-dir OUTPUT_DIR, -o OUTPUT_DIR
+                        Output directory to save losses and checkpoints (default: .)
+  --train-regex TRAIN_REGEX, -r TRAIN_REGEX
+                        Regex to filter training examples (default: None)
+  --val-regex VAL_REGEX, -R VAL_REGEX
+                        Regex to filter validation examples (default: None)
+  --load-checkpoint LOAD_CHECKPOINT, -c LOAD_CHECKPOINT
+                        Path to training checkpoint (default: None)
+  --check-val-every CHECK_VAL_EVERY, -C CHECK_VAL_EVERY
+                        Check validation dataset every n steps (default: 10000)
+  --log-every LOG_EVERY, -E LOG_EVERY
+                        Log training loss every n steps (default: 100)
+  --no-improvement-stop NO_IMPROVEMENT_STOP, -n NO_IMPROVEMENT_STOP
+                        Number of checks with no improvement before stopping early (default: 5)
+  --hard-loss-ceiling HARD_LOSS_CEILING, -L HARD_LOSS_CEILING
+                        Max value of loss over which the training stops (default: 3.0)
+  --find-batch-size, -f
+                        Run the lightning batch_size finder (skips training) (default: False)
+  --project-name PROJECT_NAME, -p PROJECT_NAME
+                        Project in which to save this run on WandB (default: PHYLOFORMER_EXPERIMENTS)
+  --run-name RUN_NAME, -N RUN_NAME
+                        Name to give to the run on WandB (default: None)
+  --profile             Run profiler for a few steps and exit (default: False)
 ```
 
 ## Simulating trees
 
 ```shell
-usage: simulate_trees [-h] [-n NTREES] [-l NLEAVES] [-t TOPO] [-o OUTPUT]
-                      [-b BL]
+usage: simulate_trees.py [-h] [-n NTREES] [-t NTIPS] [--type {birth-death,uniform}] [-o OUTPUT] [--verbose VERBOSE]
 
 optional arguments:
   -h, --help            show this help message and exit
   -n NTREES, --ntrees NTREES
-                        number of trees (default: 20)
-  -l NLEAVES, --nleaves NLEAVES
-                        number of leaves (default: 20)
-  -t TOPO, --topology TOPO
-                        tree topology. Choices: ['birth-death', 'uniform']
-                        (default: uniform)
+                        Number of trees to simulate
+  -t NTIPS, --ntips NTIPS
+                        Size of the trees to simulate
+  --type {birth-death,uniform}
+                        Simulation methods for the trees: birth-death or uniform
   -o OUTPUT, --output OUTPUT
-                        path to the output directory were the .nwk tree files
-                        will be saved (default: .)
-  -b BL, --branchlength BL
-                        branch length distribution. Choices: ['exponential',
-                        'uniform'] (default: uniform)
+                        path to the output directory were the .nwk tree files will be saved
+  --verbose VERBOSE
 ```
 
 ## Simulating alignments
 
 ```shell
-usage: simulate_alignments [-h] -i INPUT -o OUTPUT -s SEQGEN [-l LENGTH]
-                           [-m MODEL]
+usage: Alignment simulator [-h] [--outdir OUTDIR] [--length LENGTH] [--gamma GAMMA] [--substitution SUBSTITUTION]
+                           [--custom-model CUSTOM_MODEL] [--no-summary] [--allow-duplicate-sequences] [--keep-logfiles]
+                           [--max-attempts MAX_ATTEMPTS] [--processes PROCESSES]
+                           trees
+
+positional arguments:
+  trees                 Path to the directory containing mewick trees
 
 optional arguments:
   -h, --help            show this help message and exit
-  -i INPUT, --input INPUT
-                        path to input directory containing the .nwk tree files
-  -o OUTPUT, --output OUTPUT
-                        path to output directory
-  -s SEQGEN, --seqgen SEQGEN
-                        path to the seq-gen executable
-  -l LENGTH, --length LENGTH
-                        length of the sequences in the alignments (default:
-                        200)
-  -m MODEL, --model MODEL
-                        model of evolution. Allowed values: [JTT, WAG, PAM,
-                        BLOSUM, MTREV, CPREV45, MTART, LG, HIVB, GENERAL]
-                        (default: PAM)
-```
-
-## Compute tensors
-
-```shell
-usage: make_tensors [-h] -t TREEDIR -a ALIDIR [-o OUTPUT]
-
-Generate a tensor training set from trees and MSAs
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -t TREEDIR, --treedir TREEDIR
-                        path to input directory containing the .nwk tree files
-  -a ALIDIR, --alidir ALIDIR
-                        path to input directory containing corresponding
-                        .fasta alignments
-  -o OUTPUT, --output OUTPUT
-                        path to output directory (default: current directory)
-```
-
-## Evaluate predictions
-
-```shell
-usage: evaluate [-h] -t TRUE -p PREDICTIONS
-
-Compute the RF distance between predicted trees and true trees.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -t TRUE, --true TRUE  path to directory containing true trees in .nwk format
-  -p PREDICTIONS, --predictions PREDICTIONS
-                        path to directory containing predicted trees in .nwk
-                        format
+  --outdir OUTDIR, -o OUTDIR
+                        Path to the output directory
+  --length LENGTH, -l LENGTH
+                        Length of the alignment
+  --gamma GAMMA, -g GAMMA
+                        Gamma model for between-site rate heterogeneity (G[n] for discrete gamma with n categories, GC for
+                        continuous gamma)
+  --substitution SUBSTITUTION, -s SUBSTITUTION
+                        Protein substitution model: classical (LG, WAG, Dayhoff, Blosum62) or mixture (C10, ..., C60)
+  --custom-model CUSTOM_MODEL, -c CUSTOM_MODEL
+                        Path to a custom model definition in the nexus format (e.g. the UDM models in
+                        github.com/dschrempf/EDCluster/Distributions/hogenom/*_lclr_iqtree.nex)
+  --no-summary, -n      If specified suppress the output summarizing which simulation attempts have failed
+  --allow-duplicate-sequences, -d
+                        Allow duplicate sequences in the alignments
+  --keep-logfiles, -k   Keep IQTree generated log files
+  --max-attempts MAX_ATTEMPTS, -m MAX_ATTEMPTS
+                        Maximum number of attempts to simulate alignment in case of duplicates
+  --processes PROCESSES, -p PROCESSES
+                        Number of threads for alisim to use.
 ```

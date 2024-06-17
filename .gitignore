@@ -1,5 +1,9 @@
-# Ignore additional files in testdata
-testdata/alignments/*pf*
+# Ignore additional files in data
+data/
+
+# Keep test case trees and MSAs 
+!data/testdata/alignments/
+!data/testdata/trees/
 
 simulations
 .DS_Store

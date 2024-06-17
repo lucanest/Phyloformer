@@ -11,7 +11,7 @@ from Bio import SeqIO
 from glob import glob
 from tqdm import tqdm
 
-ALPHAS_PATH = os.path.join(os.path.dirname(__file__), "hogenom_alphas.txt")
+ALPHAS_PATH = os.path.join(os.path.dirname(__file__), "data", "hogenom_alphas.txt")
 MAX_ATTEMPTS_DEFAULT = 20
 
 
