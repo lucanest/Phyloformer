@@ -1,0 +1,17 @@
+# Required for all aspects of Phyloformer
+pytorch==2.0.1
+biopython==1.81
+ete3==3.1.3
+dendropy==4.6.1
+tqdm==4.65.2
+numpy==1.24.4
+scipy==1.10.1
+
+# Necessary for training
+lightning==2.0.6
+wandb==0.15.8
+
+# Paper figures
+pandas==3.5.1
+seaborn==0.12.2
+matplotlib==3.7.2
