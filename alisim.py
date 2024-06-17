@@ -47,6 +47,7 @@ def simulate_alignment(
     treefile,
     substitution,
     gamma,
+    binary,
     custom_model_def,
     custom_model_args,
     outdir,
@@ -72,7 +73,7 @@ def simulate_alignment(
             model_args += f"+{gamma}{{{alpha}}}"
 
         cmd = [
-            "iqtree2",
+            binary,
             "--alisim",
             os.path.join(outdir, filestem),
             "-t",
@@ -173,6 +174,17 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument(
+        "--iqtree",
+        "-i",
+        type=str,
+        required=False,
+        default="iqtree2",
+        help=(
+            "Path to binary of IQTree2 to use to simulate alignments "
+            "by default it will try to use a `iqtree2` binary in your PATH."
+        ),
+    )
+    parser.add_argument(
         "--no-summary",
         "-n",
         action="store_true",
@@ -233,6 +245,7 @@ if __name__ == "__main__":
             treefile,
             args.substitution,
             args.gamma,
+            args.iqtree,
             custom_model_def,
             custom_model_args,
             args.outdir,

@@ -1,13 +1,7 @@
 import argparse
-
-# from multiprocessing import Pool
-import multiprocessing
 import os
 import pickle
 import random
-
-# from functools import partial
-from contextlib import contextmanager
 
 import numpy.random as npr
 from dendropy.simulate import treesim
@@ -23,13 +17,6 @@ def read_list(listfile):
     with open(listfile, "rb") as fp:
         n_list = pickle.load(fp)
         return n_list
-
-
-@contextmanager
-def poolcontext(*args, **kwargs):
-    pool = multiprocessing.Pool(*args, **kwargs)
-    yield pool
-    pool.terminate()
 
 
 def scaleBranch(list_of_rates, list_of_times):
@@ -173,7 +160,6 @@ def simulateTree(
                 rates[n] = list_of_rates[-1]
 
         # Additional tree traversal: we do not want branch lengths under some value.
-        # blAfter=list()
         t = rescale_tree(t, scale=scale)
         for n in t.traverse(strategy="preorder"):
             if n.is_root():
@@ -182,9 +168,7 @@ def simulateTree(
                 if n.dist < minimum_value and n.is_leaf():
                     while n.dist < minimum_value:
                         n.dist = normal(loc=minimum_value, scale=0.005)
-                        # n.dist=npr.exponential(scale=minimum_value)
-        #        blAfter.append(n.dist)
-        # t=rescale_tree(t,scale=scale)
+
         t.write(format=1, outfile=outname)
 
     elif treeType == "uniform":  # using ete3
@@ -260,7 +244,3 @@ if __name__ == "__main__":
             multiplier_big=multiplier_big,
             minimum_value=minimum_value,
         )
-
-    # with poolcontext() as pool:
-    #    results = pool.map(partial(simulateTree, numtips=numtips,treeType=treeType,outdir=outdir,verbose=verbose,diams=diams, use_bl = use_bl,
-    # rate_small = rate_small, multiplier_small = multiplier_small,rate_big = rate_big, multiplier_big = multiplier_big, minimum_value = minimum_value), range(numtrees))
