@@ -14,7 +14,7 @@ This repository contains the scripts for [the paper]():
 ```bibtex
 @article{Nesterenko2024phyloformer,
   author={Nesterenko Luca, Luc Blassel, Philippe Veber, Boussau Bastien, Jacob Laurent},
-  title={Phyloformer: towards fast, accurate and versatile phylogenetic reconstruction with deep neural networks},
+  title={Phyloformer: Fast, accurate and versatile phylogenetic reconstruction with deep neural networks},
   doi=...,
   year={2024},
   journal={bioRxiv}
@@ -137,7 +137,7 @@ Use the [`make_plots`](./make_plots.py) script to reproduce all paper figures.
 
 ```shell
 # Download the results (This might take a little time since the file is quite large)
-curl <ADDRESS-TO-RESULTS-FILE> --output .
+curl https://zenodo.org/records/11930296 --output .
 
 # Extract results file, make sure you extract it to the `data/` directory as that is where the script will look for them
 tar xzvf results.tar.gz --directory data/
