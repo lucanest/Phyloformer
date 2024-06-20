@@ -7,10 +7,8 @@ import matplotlib.transforms as mtransforms
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import tikzplotlib
 from matplotlib.gridspec import GridSpec
 from matplotlib.lines import Line2D
-from matplotlib.ticker import FormatStrFormatter
 from tqdm import tqdm
 
 warnings.filterwarnings("ignore")
@@ -1523,7 +1521,6 @@ if __name__ == "__main__":
         pbar.set_description("Plotting LG+GC topological metrics")
         fig = build_LGGC_normRF(lggc, figsize)
         plt.savefig("./figures/combined_LGGC_rf.pdf")
-        tikzplotlib.save("./figures/tex/combined_LGGC_rf.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1531,7 +1528,6 @@ if __name__ == "__main__":
         # KF score for all aln lengths
         fig = build_LGGC_KFscore(lggc, figsize)
         plt.savefig("./figures/combined_LGGC_kf.pdf")
-        tikzplotlib.save("./figures/tex/combined_LGGC_500_kf.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1539,7 +1535,6 @@ if __name__ == "__main__":
         # wRF score for all aln lengths
         fig = build_LGGC_wRF(lggc, figsize)
         plt.savefig("./figures/combined_LGGC_wrf.pdf")
-        tikzplotlib.save("./figures/tex/combined_LGGC_500_wrf.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1550,7 +1545,6 @@ if __name__ == "__main__":
         # Single RF 500 length lGGC
         fig = single_LGGC_normRF(lggc, figsize)
         plt.savefig("./figures/LGGC_500_rf.pdf")
-        tikzplotlib.save("./figures/tex/LGGC_500_rf.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1558,7 +1552,6 @@ if __name__ == "__main__":
         # Single KF 500 length LGGC
         fig = single_LGGC_KFscore(lggc, figsize)
         plt.savefig("./figures/LGGC_500_kf.pdf")
-        tikzplotlib.save("./figures/tex/LGGC_500_kf.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1566,7 +1559,6 @@ if __name__ == "__main__":
         # Single wRF 500 length LGGC
         fig = single_LGGC_wRF(lggc, figsize)
         plt.savefig("./figures/LGGC_500_wrf.pdf")
-        tikzplotlib.save("./figures/tex/LGGC_500_wrf.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1590,7 +1582,6 @@ if __name__ == "__main__":
         pbar.set_description("Plotting Cherry+Pastek topological metrics")
         fig = cherry_pastek_normRF(cherry, pastek, figsize)
         plt.savefig("./figures/cherry_pastek_rf.pdf")
-        tikzplotlib.save("./figures/tex/cherry_pastek_rf.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1598,7 +1589,6 @@ if __name__ == "__main__":
         # Fine tune KF
         fig = cherry_pastek_KFscore(cherry, pastek, figsize)
         plt.savefig("./figures/cherry_pastek_kf.pdf")
-        tikzplotlib.save("./figures/tex/cherry_pastek_kf.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1606,7 +1596,6 @@ if __name__ == "__main__":
         # Fine tune wRF
         fig = cherry_pastek_wRF(cherry, pastek, figsize)
         plt.savefig("./figures/cherry_pastek_wrf.pdf")
-        tikzplotlib.save("./figures/tex/cherry_pastek_wrf.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1615,7 +1604,6 @@ if __name__ == "__main__":
         figsize = (4.5 * mult + 1, 4.5 * mult + 1)
         fig = cherry_pastek_topos(cherry, pastek, figsize)
         plt.savefig("./figures/cherry_pastek_topos.pdf")
-        tikzplotlib.save("./figures/tex/cherry_pastek_topos.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1627,7 +1615,6 @@ if __name__ == "__main__":
         pbar.set_description("Plotting fine-tuned topological metrics")
         fig = fine_tuned_normRF(gaps, cherry, pastek, figsize)
         plt.savefig("./figures/fine_tune_rf.pdf")
-        tikzplotlib.save("./figures/tex/fine_tune_rf.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1635,7 +1622,6 @@ if __name__ == "__main__":
         # Fine tune KF
         fig = fine_tuned_KFscore(gaps, cherry, pastek, figsize)
         plt.savefig("./figures/fine_tune_kf.pdf")
-        tikzplotlib.save("./figures/tex/fine_tune_kf.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1643,7 +1629,6 @@ if __name__ == "__main__":
         # Fine tune wRF
         fig = fine_tuned_wRF(gaps, cherry, pastek, figsize)
         plt.savefig("./figures/fine_tune_wrf.pdf")
-        tikzplotlib.save("./figures/tex/fine_tune_wrf.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1671,7 +1656,6 @@ if __name__ == "__main__":
         pbar.set_description("Plotting LGGC execution metadata")
         fig = single_LGGC_elapsed(grouped_lggc, figsize, load_time)
         plt.savefig("./figures/LGGC_500_elapsed.pdf")
-        tikzplotlib.save("./figures/tex/LGGC_500_elapsed.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1679,7 +1663,6 @@ if __name__ == "__main__":
         # Memory usage 500 length LGGC
         fig = single_LGGC_mem(grouped_lggc, figsize)
         plt.savefig("./figures/LGGC_500_mem.pdf")
-        tikzplotlib.save("./figures/tex/LGGC_500_mem.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1709,7 +1692,6 @@ if __name__ == "__main__":
         pbar.set_description("Plotting fine-tuned execution metadata")
         fig = fine_tuned_elapsed(grouped_gaps, grouped_cherry, grouped_pastek, figsize)
         plt.savefig("./figures/fine_tune_elapsed.pdf")
-        tikzplotlib.save("./figures/tex/fine_tune_elapsed.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1717,7 +1699,6 @@ if __name__ == "__main__":
         # Fine tune mem
         fig = fine_tuned_mem(grouped_gaps, grouped_cherry, grouped_pastek, figsize)
         plt.savefig("./figures/fine_tune_mem.pdf")
-        tikzplotlib.save("./figures/tex/fine_tune_mem.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1735,7 +1716,6 @@ if __name__ == "__main__":
             figsize,
         )
         plt.savefig("./figures/elapsed.pdf")
-        tikzplotlib.save("./figures/tex/elapsed.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1771,7 +1751,6 @@ if __name__ == "__main__":
         pbar.set_description("Plotting LGGC distance results")
         fig = single_LGGC_mre(dists_lggc, figsize)
         plt.savefig("./figures/LGGC_500_mre.pdf")
-        tikzplotlib.save("./figures/tex/LGGC_500_mre.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1779,7 +1758,6 @@ if __name__ == "__main__":
         # MAE for aln 500 LG+GC
         fig = single_LGGC_mae(dists_lggc, figsize)
         plt.savefig("./figures/LGGC_500_mae.pdf")
-        tikzplotlib.save("./figures/tex/LGGC_500_mae.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1799,7 +1777,6 @@ if __name__ == "__main__":
         # Distance percentile vs MAE
         single_LGGC_quantiles_mae(sub, figsize)
         plt.savefig("./figures/LGGC_500_quantile_mae.pdf")
-        tikzplotlib.save("./figures/tex/LGGC_500_quantile_mae.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1807,7 +1784,6 @@ if __name__ == "__main__":
         # Distance percentile vs MRE
         single_LGGC_quantiles_mre(sub, figsize)
         plt.savefig("./figures/LGGC_500_quantile_mre.pdf")
-        tikzplotlib.save("./figures/tex/LGGC_500_quantile_mre.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1815,7 +1791,6 @@ if __name__ == "__main__":
         # Distance percentile vs MRE
         single_LGGC_quantiles_mrd(sub, figsize)
         plt.savefig("./figures/LGGC_500_quantile_mrd.pdf")
-        tikzplotlib.save("./figures/tex/LGGC_500_quantile_mrd.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1823,7 +1798,6 @@ if __name__ == "__main__":
         # Binned Distance vs MAE
         single_LGGC_binned_mae(sub, figsize)
         plt.savefig("./figures/LGGC_500_binned_mae.pdf")
-        tikzplotlib.save("./figures/tex/LGGC_500_binned_mae.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1831,7 +1805,6 @@ if __name__ == "__main__":
         # Binned Distance vs MRE
         single_LGGC_binned_mre(sub, figsize)
         plt.savefig("./figures/LGGC_500_binned_mre.pdf")
-        tikzplotlib.save("./figures/tex/LGGC_500_binned_mre.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1839,7 +1812,6 @@ if __name__ == "__main__":
         # Binned Distance vs MRE
         single_LGGC_binned_mrd(sub, figsize)
         plt.savefig("./figures/LGGC_500_binned_mrd.pdf")
-        tikzplotlib.save("./figures/tex/LGGC_500_binned_mrd.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1864,7 +1836,6 @@ if __name__ == "__main__":
         ax.set_xlabel("Pairwise Distance")
         sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1))
         plt.savefig("./figures/pairwise_dist_testset.pdf")
-        tikzplotlib.save("./figures/tex/pairwise_dist_testset.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1873,7 +1844,6 @@ if __name__ == "__main__":
             lggc[lggc["length"] == 500], dists_lggc[dists_lggc["length"] == 500], (9, 8)
         )
         plt.savefig("./figures/base_vs_mre.pdf")
-        tikzplotlib.save("./figures/tex/base_vs_mre.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1898,7 +1868,6 @@ if __name__ == "__main__":
         pbar.set_description("Plotting fine-tuned distance results")
         fig = fine_tuned_mae(dists_gaps, dists_cherry, dists_pastek, figsize)
         plt.savefig("./figures/fine_tune_mae.pdf")
-        tikzplotlib.save("./figures/tex/fine_tune_mae.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1906,7 +1875,6 @@ if __name__ == "__main__":
         figsize = (6.5, 6)
         pbar.set_description("Plotting Histograms on distances in LGGC")
         fig = hist_LGGC(dists_lggc[dists_lggc["length"] == 500], figsize)
-        # plt.savefig("./figures/dist_hist_LGGC.pdf")
         plt.savefig("./figures/dist_hist_LGGC.png", dpi=150)
         plt.clf()
         plt.cla()
@@ -1915,7 +1883,6 @@ if __name__ == "__main__":
         # figsize = (10.5, 15)
         pbar.set_description("Plotting Histograms on distances in Pastek")
         fig = hist_cherry_4x4(dists_cherry, figsize)
-        # plt.savefig("./figures/dist_hist_cherry.pdf")
         plt.savefig("./figures/dist_hist_cherry.png", dpi=150)
         plt.clf()
         plt.cla()
@@ -1923,7 +1890,6 @@ if __name__ == "__main__":
 
         pbar.set_description("Plotting Histograms on distances in Pastek")
         fig = hist_pastek_4x4(dists_pastek, figsize)
-        # plt.savefig("./figures/dist_hist_pastek.pdf")
         plt.savefig("./figures/dist_hist_pastek.png", dpi=150)
         plt.clf()
         plt.cla()
@@ -1944,7 +1910,6 @@ if __name__ == "__main__":
             LGGC_METHODS_NO_HAMMING,
         )
         plt.savefig("./figures/lggc_all.pdf")
-        tikzplotlib.save("./figures/tex/lggc_all.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1957,7 +1922,6 @@ if __name__ == "__main__":
             sorted(sorted(["IQTree_LG+GC"] + FINE_TUNE_METHODS) + ["PF_Cherry+FastME"]),
         )
         plt.savefig("./figures/cherry_all.pdf")
-        tikzplotlib.save("./figures/tex/cherry_all.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1970,7 +1934,6 @@ if __name__ == "__main__":
             sorted(sorted(["IQTree_LG+GC"] + FINE_TUNE_METHODS) + ["PF_SelReg+FastME"]),
         )
         plt.savefig("./figures/pastek_all.pdf")
-        tikzplotlib.save("./figures/tex/pastek_all.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -1987,7 +1950,6 @@ if __name__ == "__main__":
             ),
         )
         plt.savefig("./figures/gaps_all.pdf")
-        tikzplotlib.save("./figures/tex/gaps_all.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -2033,14 +1995,12 @@ if __name__ == "__main__":
         # 50 tips plot
         fig = misspecification(means_50, figsize, datasets, pf_order)
         plt.savefig("./figures/misspecification_50tips.pdf")
-        tikzplotlib.save("./figures/tex/misspecification_50tips.tex")
         plt.clf()
         plt.cla()
 
         # All tips plot
         fig = misspecification(means_alltips, figsize, datasets, pf_order)
         plt.savefig("./figures/misspecification_alltips.pdf")
-        tikzplotlib.save("./figures/tex/misspecification_alltips.tex")
         plt.clf()
         plt.cla()
 
@@ -2058,7 +2018,6 @@ if __name__ == "__main__":
         # Norm RF for all aln lengths
         fig = build_LGGC_lik(lik_lggc, figsize)
         plt.savefig("./figures/combined_LGGC_lik.pdf")
-        tikzplotlib.save("./figures/tex/combined_LGGC_lik.tex")
         plt.clf()
         plt.cla()
 
@@ -2068,7 +2027,6 @@ if __name__ == "__main__":
         # Single RF 500 length lGGC
         fig = single_LGGC_lik(lik_lggc, figsize)
         plt.savefig("./figures/LGGC_500_lik.pdf")
-        tikzplotlib.save("./figures/tex/LGGC_500_lik.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)
@@ -2089,7 +2047,6 @@ if __name__ == "__main__":
         fig = plot_brlen_dists(sub, (10, 4))
         plt.savefig("./figures/branch_length_errors.pdf")
         plt.savefig("./figures/branch_length_errors.svg")
-        tikzplotlib.save("./figures/tex/branch_length_errors.tex")
         plt.clf()
         plt.cla()
         pbar.update(1)

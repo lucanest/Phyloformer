@@ -140,10 +140,10 @@ Use the [`make_plots`](./make_plots.py) script to reproduce all paper figures.
 
 ```shell
 # Download the results (This might take a little time since the file is quite large)
-curl https://zenodo.org/records/11930296 --output .
+curl 'https://zenodo.org/records/11930296/files/results.tar.gz?download=1' -o results.tar.gz
 
-# Extract results file, make sure you extract it to the `data/` directory as that is where the script will look for them
-tar xzvf results.tar.gz --directory data/
+# Extract results file, make sure you are in the repo root
+tar xzvf results.tar.gz 
 
 # Run figure producing script (this should take 5 to 10 minutes)
 python make_plots.py
