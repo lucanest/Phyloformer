@@ -15,7 +15,8 @@ This repository contains the scripts for [the paper](todo):
 @article{Nesterenko2024phyloformer,
   author={Nesterenko Luca, Luc Blassel, Philippe Veber, Boussau Bastien, Jacob Laurent},
   title={Phyloformer: Fast, accurate and versatile phylogenetic reconstruction with deep neural networks},
-  doi=...,
+  doi={10.1101/2024.06.17.599404},
+  url={https://www.biorxiv.org/content/10.1101/2024.06.17.599404v1},
   year={2024},
   journal={bioRxiv}
 }
@@ -48,7 +49,7 @@ conda create -n phylo python=3.9 -c defaults && conda activate phylo
 pip install -r requirements.txt
 ```
 
-Some pre-built binaries are included in this repo both for [linux](./bin/bin_linux/) and [macos](./bin/bin_macos/), these include:
+Some pre-built binaries are included in this repo both for [linux AMD64](./bin/bin_linux/) and [macos ARM64](./bin/bin_macos/), these include:
 - [`IQTree`](http://www.iqtree.org): for inferring maximum likelihood (ML) trees and simulating alignments *(For the alignment simulation to work you should use IQTree v2.0.0)*
 - [`FastTree`](http://www.microbesonline.org/fasttree/): for inferring ML-like trees
 - [`FastME`](https://gite.lirmm.fr/atgc/FastME): for inferring trees from distance matrices (such as the ones produced by phyloformer)
@@ -71,7 +72,7 @@ All the named phyloformer models in the manuscript are given in the [`models`](.
 
 Use the [`infer_alns.py`](./infer_alns.py) script to infer some distance matrices from alignments using a trained Phyloformer model
 
-Let's use the small test set given along with this repo to test out Phyloformer. 
+Let's use the small test set given along with this repo to test out Phyloformer *(If you're on a macos ARM chip replace `bin_linux` with `bin_macos`)*. 
 ```shell
 # First make sure you are in the repo and have the correct conda env
 cd Phyloformer && conda activate phylo
@@ -83,11 +84,9 @@ python infer_alns.py -o data/testdata/pf_matrices models/pf.ckpt data/testdata/m
 # Infer trees with FastME
 mkdir data/testdata/pf_trees
 for file in data/testdata/pf_matrices/*; do
-  # Get file stem
   base="${file##*/}"
   stem="${base%%.*}"
 
-  # Infer trees
   ./bin/bin_linux/fastme -i "${file}" -o "data/testdata/pf_trees/${stem}.nwk" --nni --spr
 done
 
@@ -117,7 +116,7 @@ done
 
 # Simulate 250-AA long alignments using LG+GC from the simulated trees
 # here we specify the iqtree binary given in this repo and allow duplicate sequences 
-# in the MSAs we get
+# in the MSAs we get as output
 python alisim.py \
     --outdir data/test_set/alignments \
     --substitution LG \
@@ -142,7 +141,7 @@ Use the [`make_plots`](./make_plots.py) script to reproduce all paper figures.
 # Download the results (This might take a little time since the file is quite large)
 curl 'https://zenodo.org/records/11930296/files/results.tar.gz?download=1' -o results.tar.gz
 
-# Extract results file, make sure you are in the repo root
+# Extract results file (make sure you are in the repo root)
 tar xzvf results.tar.gz 
 
 # Run figure producing script (this should take 5 to 10 minutes)
