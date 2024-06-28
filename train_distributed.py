@@ -8,6 +8,7 @@ import random
 import re
 import sys
 from pprint import pprint
+from multiprocessing import cpu_count
 
 import lightning
 import lightning.pytorch.loggers as log
@@ -55,7 +56,11 @@ def stem(path):
 
 def make_pairs(treefiles, alnfiles, regex):
     """Find pairs of corresponding trees and MSAs"""
-    alndict = {stem(alnfile): alnfile for alnfile in alnfiles}
+    alndict = {
+        stem(alnfile): alnfile
+        for alnfile in alnfiles
+        if alnfile.endswith(".fa") or alnfile.endswith(".fasta")
+    }
     pairs = []
     for treefile in treefiles:
         if not (treefile.endswith(".nwk") or treefile.endswith(".newick")):
@@ -338,7 +343,7 @@ if __name__ == "__main__":
     VAL_CHECK_STEPS = args.check_val_every
     LOGGING_STEPS = args.log_every
 
-    N_CPUS = int(os.environ.get("SLURM_CPUS_PER_TASK", 0))
+    N_CPUS = int(os.environ.get("SLURM_CPUS_PER_TASK", cpu_count()))
     NUM_WORKERS = N_CPUS // 2
 
     global WORKERS_TRAIN
@@ -476,13 +481,16 @@ if __name__ == "__main__":
             )
         )
 
+    # Cannot use lightning's auto accelerator selection since we do not
+    # want to use MPS devices
+    accelerator = "cuda" if torch.cuda.is_available() else "cpu"
     trainer_args = {
         "max_epochs": args.nb_epochs,
         "log_every_n_steps": LOGGING_STEPS,
         "val_check_interval": VAL_CHECK_STEPS,
         "logger": wandb_logger,
         "callbacks": callbacks,
-        "accelerator": "cpu",
+        "accelerator": accelerator,
         **slurm_args,
     }
 
