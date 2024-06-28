@@ -209,122 +209,152 @@ if __name__ == "__main__":
         "train PF instance", formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
-    parser.add_argument(
+    # DATA
+    data_grp = parser.add_argument_group("data", description="Data IO parameters")
+    data_grp.add_argument(
         "--train-trees", "-t", required=True, help="Directory with training trees"
     )
-    parser.add_argument(
+    data_grp.add_argument(
         "--train-alignments",
         "-a",
         required=True,
         help="Directory with training alignments",
     )
-    parser.add_argument(
+    data_grp.add_argument(
         "--val-trees", "-T", required=False, help="Directory with validation trees"
     )
-    parser.add_argument(
+    data_grp.add_argument(
         "--val-alignments",
         "-A",
         required=False,
         help="Directory with validation alignments",
     )
-    parser.add_argument(
+    data_grp.add_argument(
+        "--train-regex", "-r", default=None, help="Regex to filter training examples"
+    )
+    data_grp.add_argument(
+        "--val-regex", "-R", default=None, help="Regex to filter validation examples"
+    )
+
+    # STARTING POINT
+    start_grp = parser.add_argument_group(
+        "STARTING POINT",
+        description=(
+            "Model starting point, specifying one of these options will "
+            "override options from the [ARCHITECTURE] parameter group."
+        ),
+    )
+    start_grp.add_argument(
+        "--load-checkpoint",
+        "-c",
+        default=None,
+        help="Path to checkpoint to resume training from",
+    )
+    start_grp.add_argument(
         "--base-model", "-m", required=False, type=str, help="Base model to fine-tune"
     )
-    parser.add_argument(
+
+    # ARCHITECTURE
+    arch_grp = parser.add_argument_group("MODEL ARCHITECTURE")
+    arch_grp.add_argument(
         "--dropout", "-D", default=0.0, type=float, help="Dropout proportion"
     )
-    parser.add_argument(
+    arch_grp.add_argument(
         "--nb-blocks", "-b", default=6, type=int, help="Number of PF blocks"
     )
-    parser.add_argument(
+    arch_grp.add_argument(
         "--embed-dim", "-d", default=64, type=int, help="Number of embedding dimensions"
     )
-    parser.add_argument(
+    arch_grp.add_argument(
         "--nb-heads", "-H", default=4, type=int, help="Number of attention heads"
     )
-    parser.add_argument(
+
+    # TRAINING CONTROL
+    train_grp = parser.add_argument_group(
+        "TRAINING", description="Training control parameters"
+    )
+    train_grp.add_argument(
         "--nb-epochs", "-e", default=100, type=int, help="Number of epochs to train for"
     )
-    parser.add_argument(
-        "--max-steps", "-M", default=None, type=int, help="Max number of training steps"
-    )
-    parser.add_argument(
+    train_grp.add_argument(
         "--warmup-steps", "-w", default=5000, type=int, help="Number of warmup steps"
     )
-    parser.add_argument(
+    train_grp.add_argument(
         "--learning-rate",
         "-l",
         default=1e-4,
         type=float,
         help="Traget starting learning rate",
     )
-    parser.add_argument(
-        "--batch-size", "-s", default=4, type=int, help="Training batch size"
-    )
-    parser.add_argument(
-        "--output-dir",
-        "-o",
-        default=".",
-        help="Output directory to save losses and checkpoints",
-    )
-    parser.add_argument(
-        "--train-regex", "-r", default=None, help="Regex to filter training examples"
-    )
-    parser.add_argument(
-        "--val-regex", "-R", default=None, help="Regex to filter validation examples"
-    )
-    parser.add_argument(
-        "--load-checkpoint", "-c", default=None, help="Path to training checkpoint"
-    )
-    parser.add_argument(
+    train_grp.add_argument(
         "--check-val-every",
         "-C",
         default=10_000,
         type=int,
         help="Check validation dataset every n steps",
     )
-    parser.add_argument(
-        "--log-every",
-        "-E",
-        default=100,
-        type=int,
-        help="Log training loss every n steps",
+    train_grp.add_argument(
+        "--batch-size", "-s", default=4, type=int, help="Training batch size"
     )
-    parser.add_argument(
+    train_grp.add_argument(
+        "--max-steps", "-M", default=None, type=int, help="Max number of training steps"
+    )
+    train_grp.add_argument(
         "--no-improvement-stop",
         "-n",
         default=5,
         type=int,
         help="Number of checks with no improvement before stopping early",
     )
-    parser.add_argument(
+    train_grp.add_argument(
         "--hard-loss-ceiling",
         "-L",
         default=3.0,
         type=float,
         help="Max value of loss over which the training stops",
     )
-    parser.add_argument(
-        "--find-batch-size",
-        "-f",
-        action="store_true",
-        help="Run the lightning batch_size finder (skips training)",
+
+    # LOGGING
+    log_grp = parser.add_argument_group("LOGGING")
+    log_grp.add_argument(
+        "--output-dir",
+        "-o",
+        default=".",
+        help="Output directory to save losses and checkpoints",
     )
-    parser.add_argument(
+    log_grp.add_argument(
+        "--log-every",
+        "-E",
+        default=100,
+        type=int,
+        help="Log training loss every n steps",
+    )
+    log_grp.add_argument(
         "--project-name",
         "-p",
         required=False,
         default="PHYLOFORMER_EXPERIMENTS",
         help="Project in which to save this run on WandB",
     )
-    parser.add_argument(
+    log_grp.add_argument(
         "--run-name",
         "-N",
         required=False,
         default=None,
         help="Name to give to the run on WandB",
     )
-    parser.add_argument(
+
+    # MISC
+    utils_grp = parser.add_argument_group(
+        "UTILS", description="Utilities that are run instead of training"
+    )
+    utils_grp.add_argument(
+        "--find-batch-size",
+        action="store_true",
+        help="Run the lightning batch_size finder (skips training)",
+    )
+
+    utils_grp.add_argument(
         "--profile", action="store_true", help="Run profiler for a few steps and exit"
     )
 
