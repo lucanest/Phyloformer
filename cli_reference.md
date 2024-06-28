@@ -2,7 +2,7 @@
 
 ## Inferring trees
 
-```shell
+```
 > python infer_alns.py --help
 
 usage: Infer evolutionnary distances with PhyloFormer [-h] [--output-dir OUTPUT_DIR] [--trees] checkpoint alignments
@@ -20,7 +20,7 @@ optional arguments:
 
 ## Training a model
 
-```shell
+```
 > python train_distributed.py --help
 
 usage: train PF instance [-h] --train-trees TRAIN_TREES --train-alignments
@@ -125,7 +125,7 @@ UTILS:
 
 ## Simulating trees
 
-```shell
+```
 > python simulate_trees.py --help
 
 usage: simulate_trees.py [-h] [-n NTREES] [-t NTIPS] [--type {birth-death,uniform}] [-o OUTPUT] [--verbose VERBOSE]
@@ -145,7 +145,7 @@ optional arguments:
 
 ## Simulating alignments
 
-```shell
+```
 > python alisim.py --help
 
 usage: Alignment simulator [-h] [--outdir OUTDIR] [--length LENGTH] [--gamma GAMMA] [--substitution SUBSTITUTION]
