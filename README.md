@@ -9,7 +9,7 @@
 - Bastien Boussau
 - Laurent Jacob
 
-This repository contains the scripts for [the paper](todo):
+This repository contains the scripts for [the paper](https://www.biorxiv.org/content/10.1101/2024.06.17.599404v1):
 
 ```bibtex
 @article{Nesterenko2024phyloformer,
@@ -129,10 +129,100 @@ python alisim.py \
 ```
 
 ### Training a Phyloformer model
-Use the [`train_distributed`](./train_distributed.py) script to train or fine-tune a PF model on some data (Need lightning, will work on a SLURM env)
+Use the [`train_distributed`](./train_distributed.py) script to train or fine-tune a PF model on some data.
+Training is done using a `lightning` wrapper, so make sure that is installed before attempting it. 
+This script is made to run on a CUDA GPU within a SLURM environment but it should run fine on a personlal computer.   
+*If you wish to train on modern ARM architecture Apple machines, the script will run on the CPU instead f the GPU because of a bug in the MPS implementation of `Elu()`.*
+
+For this I will assume that you have your training data organized as follows:
 ```
-TODO Add instructions for this
+data/
+├── train/
+│   ├── msas/
+│   └── trees/
+└── val/
+    ├── msas/
+    └── trees/
 ```
+Note that the training script supports auto-splitting the data into training and validation sets, however for reproducibility purposes it is not recommended, especially if you intend to use checkpoints and resume training at a further point.  
+
+**Important:** so that the data-loader knows which simulated alignment comes from which simulated tree, corresponding tree and alignment file pairs must have the same file name with differing extensions (`.nwk`/`.newick` for trees and `.fa`/`.fasta` for alignments). This means that if you have a `data/train/trees/0_20_tips.nwk` tree file you must have a corresponding `data/train/msas/0_20_tips.fa` alignment file.
+
+#### Training from scratch
+
+##### Basic example
+Ok now that we have the correct data layout we can train a Phyloformer instance on our data. We wand to run this for 20 epochs, with 300 warmup steps on our learning-rate schedule at the end of which we reach the target starting learning-rate of $10^{-4}$ and a batch size of 4:  
+
+```shell
+python train_distributed.py \
+    --train-trees data/train/trees \
+    --train-alignments data/train/msas \
+    --val-trees data/val/trees \
+    --val-alignments data/val/msas \
+    --warmup-steps 300 \
+    --learning-rate 1e-4 \
+    --nb-epochs 20 \
+    --batch-size 4 \
+    --check-val-every 1000
+```
+
+We also specify that we want to check the validation loss *(on the whole validation set)* every 1000 steps. Every time that the validation loss is estimated a model checkpoint is saved. Checkpoints are saved in a directory named `checkpoints_LR_...` that encodes the specifics of the current training run. In parallel to this, training logs are handled by [`wandb`]() and saved to the `wandb` directory. Since this script was designed to run on an offline SLURM cluster node, `wandb` logs are not automatically synced to the online platform and users must run `wandb sync` on the desired logs to upload them from a machine that has an internet connection *(e.g. the cluster's head node)*.   
+`wandb` parameters like the project name and the run name can be user-specified with the `--project-name` and `--run-name` flags respectively. 
+You can also specify the directory in which to save the checkpoints and the logs by using the `--output-dir` flag *(by default it is the current directory)*.
+
+##### Specifying model architecture
+In the previous command we trained a phyloformer instance with a default architecture *(6 attention blocks, with 64 embedding dimensions, 4 attention heads and 0.0 dropout)*. Each of these parametrs can be user-specified, e.g: 
+```shell
+python train_distributed.py \
+    --nb-blocks 3 \
+    --embed-dim 128 \
+    --nb-heads 2 \
+    --dropout 0.5 \
+    ...
+```
+
+##### Training stopping conditions
+Since training a phyloformer instance can be costly it is usually a good idea to set up sonme guardrails before launching training on several GPUs in parallel for several hours. 
+
+The first thing to do is to set up the training schedule by defining the number of epochs, target learning rate and number of warmup steps *(see above)*. Once that is done you can control when the model stops training either:
+
+- ***After a set number of steps*** with the `--max-steps` flag. This is useful if you want to stop training early but have a LR schedule that is defined over more steps. By default this is `None` meaning that the training will continue until the specified number of epochs is reached. 
+- ***With early stopping conditions***
+    - the `--no-improvement-stop`/`-n` flag can be used to set the number of validation steps for which there have been no improvement before stopping training. *(e.g. with `-n 5` if after measuring validaiton loss 5 times without improving performance at least once, then traininng stops.)*.
+    - the `--hard-loss-ceiling`/`-L` flag sets a value that if the training or validation loss is ever above training stops immediately. 
+
+#### Resuming training from a checkpoint
+Resuming training from a saved checkpoint is meant to be intuitive, you just need to specify the data paths, checkpoint path and validation check interval. All model architecture, LR scheduling and early stopping parameters are contained in the saved checkpoint and will be applied automatically:
+
+```shell
+python train_distributed.py \
+    --train-trees data/train/trees \
+    --train-alignments data/train/msas \
+    --val-trees data/val/trees \
+    --val-alignments data/val/msas \ 
+    --check-val-every 1000 \
+    --load-checkpoint checkpoints_.../last.ckpt
+```
+the `...` in the checkpoints directory are to be replaced with you checkpoint directory depending on the previous run's trainig parameters.
+
+#### Fine-tuning from a pre-trained model
+Fine-tuning a previous model is much like training a model from scratch excepts we do not need to specify architecture parameters and we need to specify the path to the pre-trained base model that we want to fine tune:
+
+```shell
+python train_distributed.py \
+    --train-trees data/train/trees \
+    --train-alignments data/train/msas \
+    --val-trees data/val/trees \
+    --val-alignments data/val/msas \
+    --warmup-steps 300 \
+    --learning-rate 1e-4 \
+    --nb-epochs 20 \
+    --batch-size 4 \
+    --check-val-every 1000 \
+    --base-model path/to/pretrained/model.ckpt
+```
+
+This should cover all use cases for training, please refer to the [`cli_reference.md`](./cli_reference.md) file for all the flags or open an issue if you believe that something is missing.
 
 ### Re-producing figures
 Use the [`make_plots`](./make_plots.py) script to reproduce all paper figures. 
