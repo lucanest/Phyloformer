@@ -235,7 +235,7 @@ def build_plot(df, methods, metric, label, figsize, xticks, ymajor, yminor):
         ax.set_xlabel("Number of leaves")
         # Supress ylabel of lower right subplot
         if length == 1000:
-            ax.set_ylabel(None)
+            ax.set_ylabel("")
         else:
             ax.set_ylabel(label)
 
@@ -296,8 +296,8 @@ def side_by_side(df, methods, metric, label, figsize):
         ax.get_legend().remove()
 
     ax_legend.set_axis_off()
-    ax_legend.set_ylabel(None)
-    ax_legend.set_xlabel(None)
+    ax_legend.set_ylabel("")
+    ax_legend.set_xlabel("")
     ax_legend.legend(h, l, loc="center", bbox_to_anchor=(0.5, 0.5), ncol=4)
 
     return fig
@@ -305,64 +305,22 @@ def side_by_side(df, methods, metric, label, figsize):
 
 def build_LGGC_normRF(df, figsize):
     label = "Normalized Robinson-Foulds distance"
-    ticks = [float(f"0.{i:02}") for i in range(21)]
-    major = [0, 0.05, 0.1, 0.15, 0.2]
-    minor = [x for x in ticks if x not in major]
-
     return side_by_side(df, LGGC_METHODS_NO_HAMMING, "norm_rf", label, figsize)
-
-    return build_plot(
-        df, LGGC_METHODS_NO_HAMMING, "norm_rf", label, figsize, TIPS_TICKS, major, minor
-    )
 
 
 def build_LGGC_KFscore(df, figsize):
     label = "Kuhner-Felsenstein distance"
-    ticks = [round(i / 10, 1) for i in range(35)]
-    major = [0, 0.5, 1, 1.5, 2, 2.5, 3]
-    minor = [x for x in ticks if x not in major]
-
     return side_by_side(df, LGGC_METHODS_NO_HAMMING, "kf_score", label, figsize)
-
-    return build_plot(
-        df,
-        LGGC_METHODS_NO_HAMMING,
-        "kf_score",
-        label,
-        figsize,
-        TIPS_TICKS,
-        major,
-        minor,
-    )
 
 
 def build_LGGC_wRF(df, figsize):
     label = "weighted Robinson-Foulds distance"
-    ticks = list(range(16))
-    major = list(range(0, 16, 5))
-    minor = [x for x in ticks if x not in major]
-
     return side_by_side(df, LGGC_METHODS_NO_HAMMING, "weighted_rf", label, figsize)
-
-    return build_plot(
-        df,
-        LGGC_METHODS_NO_HAMMING,
-        "weighted_rf",
-        label,
-        figsize,
-        TIPS_TICKS,
-        major,
-        minor,
-    )
 
 
 def build_LGGC_lik(df, figsize):
     label = "Log-likelihood Ratio"
     fig = side_by_side(df, LGGC_METHODS_NO_HAMMING, "ratio", label, figsize)
-
-    # fig = build_plot(
-    #     df, LGGC_METHODS_NO_HAMMING, "ratio", label, figsize, TIPS_TICKS, None, None
-    # )
 
     for ax in fig.axes[:-1]:
         ax.axhline(y=1, ls=":", color="gray")
@@ -371,7 +329,6 @@ def build_LGGC_lik(df, figsize):
 
 
 def single_LGGC_normRF(df, figsize):
-
     sub = df[df["length"] == 500]
 
     # Single RF plot for LG+GC 500 AAs
@@ -481,7 +438,6 @@ def single_LGGC_mrd(df, figsize):
 
 
 def single_LGGC_quantiles_mae(sub, figsize):
-
     # Single RF plot for LG+GC 500 AAs
     fig, ax = plt.subplots(1, figsize=figsize, layout="constrained")
     for method in sorted(LGGC_METHODS_NO_HAMMING + ["PF_Base+FastME"]):
@@ -500,7 +456,6 @@ def single_LGGC_quantiles_mae(sub, figsize):
 
 
 def single_LGGC_quantiles_mre(sub, figsize):
-
     # Single RF plot for LG+GC 500 AAs
     fig, ax = plt.subplots(1, figsize=figsize, layout="constrained")
     for method in sorted(LGGC_METHODS_NO_HAMMING + ["PF_Base+FastME"]):
@@ -518,7 +473,6 @@ def single_LGGC_quantiles_mre(sub, figsize):
 
 
 def single_LGGC_quantiles_mrd(sub, figsize):
-
     # Single RF plot for LG+GC 500 AAs
     fig, ax = plt.subplots(1, figsize=figsize, layout="constrained")
     for method in sorted(LGGC_METHODS_NO_HAMMING + ["PF_Base+FastME"]):
@@ -536,7 +490,6 @@ def single_LGGC_quantiles_mrd(sub, figsize):
 
 
 def single_LGGC_binned_mae(sub, figsize):
-
     # Single RF plot for LG+GC 500 AAs
     fig, ax = plt.subplots(1, figsize=figsize, layout="constrained")
     for method in sorted(LGGC_METHODS_NO_HAMMING + ["PF_Base+FastME"]):
@@ -555,7 +508,6 @@ def single_LGGC_binned_mae(sub, figsize):
 
 
 def single_LGGC_binned_mre(sub, figsize):
-
     # Single RF plot for LG+GC 500 AAs
     fig, ax = plt.subplots(1, figsize=figsize, layout="constrained")
     for method in sorted(LGGC_METHODS_NO_HAMMING + ["PF_Base+FastME"]):
@@ -573,7 +525,6 @@ def single_LGGC_binned_mre(sub, figsize):
 
 
 def single_LGGC_binned_mrd(sub, figsize):
-
     # Single RF plot for LG+GC 500 AAs
     fig, ax = plt.subplots(1, figsize=figsize, layout="constrained")
     for method in sorted(LGGC_METHODS_NO_HAMMING + ["PF_Base+FastME"]):
@@ -629,10 +580,20 @@ def single_LGGC_elapsed(df, figsize, model_load_time=None):
     return fig
 
 
-def paper_elapsed(df, figsize):
-
+def paper_elapsed(df, figsize, model_load_time=None):
     # Single RF plot for LG+GC 500 AAs
     fig, ax = plt.subplots(1, figsize=figsize, layout="constrained")
+    if model_load_time is not None:
+        plot_line(
+            df,
+            "PF+FastME",
+            ax,
+            "n_tips",
+            "elapsed_sec",
+            offset=model_load_time,
+            alpha=0.2,
+            label=False,
+        )    
     for method in sorted(LGGC_METHODS_NO_HAMMING + ["IQTree_MF"]):
         plot_line(df, method, ax, "n_tips", "elapsed_sec")
 
@@ -685,7 +646,6 @@ def single_LGGC_mem(df, figsize):
 
 
 def single_LGGC_lik(df, figsize):
-
     sub = df[df["length"] == 500]
 
     # Single RF plot for LG+GC 500 AAs
@@ -784,13 +744,13 @@ def cherry_pastek_plots(
         ax.set_xlabel("Number of leaves")
         ax.get_legend().remove()
 
-    ax_pastek.set_ylabel(None)
+    ax_pastek.set_ylabel("")
     if sharey:
         plt.setp(ax_pastek.get_yticklabels(), visible=False)
 
     ax_dummy.set_axis_off()
-    ax_dummy.set_ylabel(None)
-    ax_dummy.set_xlabel(None)
+    ax_dummy.set_ylabel("")
+    ax_dummy.set_xlabel("")
     ax_dummy.legend(handles=handles, loc="center", ncol=3)
 
     return fig
@@ -897,15 +857,15 @@ def fine_tuned_plot(
         ax.set_xlabel("Number of leaves")
         ax.get_legend().remove()
 
-    ax_cherry.set_ylabel(None)
-    ax_pastek.set_ylabel(None)
+    ax_cherry.set_ylabel("")
+    ax_pastek.set_ylabel("")
     if sharey:
         plt.setp(ax_cherry.get_yticklabels(), visible=False)
         plt.setp(ax_pastek.get_yticklabels(), visible=False)
 
     ax_dummy.set_axis_off()
-    ax_dummy.set_ylabel(None)
-    ax_dummy.set_xlabel(None)
+    ax_dummy.set_ylabel("")
+    ax_dummy.set_xlabel("")
     ax_dummy.legend(handles=handles, loc="center", ncol=3)
 
     return fig
@@ -1208,7 +1168,6 @@ def hist_pastek_4x4(dists, figsize):
 
 
 def hist_4x4(dists, figsize, methods):
-
     assert len(methods) == 4  # So we dont break the layout
 
     # Safety barrier
@@ -1277,14 +1236,14 @@ def hist_4x4(dists, figsize, methods):
         if ax in [ax1, ax3]:
             ax.set_ylabel("Predicted distance")
         else:
-            ax.set_ylabel(None)
+            ax.set_ylabel("")
             ax.tick_params(axis="y", which="both", left=False, labelleft=False)
 
         # Lavel X axes
         if ax in [ax3, ax4]:
             ax.set_xlabel("Reference distance")
         else:
-            ax.set_xlabel(None)
+            ax.set_xlabel("")
             ax.tick_params(axis="x", which="both", bottom=False, labelbottom=False)
 
         # Plot reference line
@@ -1301,7 +1260,6 @@ def hist_4x4(dists, figsize, methods):
 
 
 def hist_ft(dists, figsize, methods):
-
     # methods = FINE_TUNE_METHODS + ["PF_SelReg+FastME"]
 
     # Safety barrier
@@ -1373,13 +1331,13 @@ def hist_ft(dists, figsize, methods):
     for ax in [iqax, fmax, ptax]:
         ax.set_ylabel("Predicted distance")
     for ax in [ftax, pfax]:
-        ax.set_ylabel(None)
+        ax.set_ylabel("")
         ax.tick_params(axis="y", which="both", left=False, labelleft=False)
 
     for ax in [pfax, ptax]:
         ax.set_xlabel("Reference distance")
     for ax in [iqax, fmax, ftax]:
-        ax.set_xlabel(None)
+        ax.set_xlabel("")
         ax.tick_params(axis="x", which="both", bottom=False, labelbottom=False)
 
     return fig
@@ -1494,7 +1452,6 @@ def plot_brlen_dists(sub, figsize):
 
 
 if __name__ == "__main__":
-
     # Set general plotting options
     sns.set_context("notebook")
     sns.set_style("darkgrid")
@@ -1716,6 +1673,21 @@ if __name__ == "__main__":
             figsize,
         )
         plt.savefig("./figures/elapsed.pdf")
+        plt.clf()
+        plt.cla()
+        pbar.update(1)
+
+        fig = paper_elapsed(
+            pd.concat(
+                [
+                    grouped_lggc[grouped_lggc["length"] == 500],
+                    grouped_cherry[grouped_cherry["marker"] == "IQTree_MF"],
+                ]
+            ),
+            figsize,
+            load_time
+        )
+        plt.savefig("./figures/elapsed_pf_loads.pdf")
         plt.clf()
         plt.cla()
         pbar.update(1)

@@ -229,7 +229,7 @@ Use the [`make_plots`](./make_plots.py) script to reproduce all paper figures.
 
 ```shell
 # Download the results (This might take a little time since the file is quite large)
-curl 'https://zenodo.org/records/11930296/files/results.tar.gz?download=1' -o results.tar.gz
+curl 'https://zenodo.org/records/13742527/files/results.tar.gz?download=1' -o results.tar.gz
 
 # Extract results file (make sure you are in the repo root)
 tar xzvf results.tar.gz 
