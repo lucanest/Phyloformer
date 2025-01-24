@@ -35,6 +35,16 @@ def has_duplicates(alnpath):
     return n_seqs != len(seqs)
 
 
+def trim_alignment(path, seqlen):
+    # Keep full alignment around
+    bkppath = path + ".untrimmed"
+    os.rename(path, bkppath)
+
+    aln = SeqIO.parse(bkppath, format="fasta")
+    with open(path, "w") as out:
+        SeqIO.write((rec[:seqlen] for rec in aln), out, format="fasta")
+
+
 def parse_custom_model_name(modelpath):
     with open(modelpath, "r") as file:
         for line in file:
@@ -50,6 +60,7 @@ def simulate_alignment(
     binary,
     custom_model_def,
     custom_model_args,
+    add_indels,
     outdir,
     length,
     max_attempts,
@@ -72,6 +83,11 @@ def simulate_alignment(
             alpha = sample_scale(alphas)
             model_args += f"+{gamma}{{{alpha}}}"
 
+        indel_args = []
+        if add_indels:
+            indel_args = ["--indel", "0.01,0.01", "--indel-size", "GEO{5},GEO{4}"]
+            threads = 1  # alisim cannot use multiple threads with the indel model
+
         cmd = [
             binary,
             "--alisim",
@@ -89,6 +105,7 @@ def simulate_alignment(
             f"{length}",
             "--threads",
             f"{threads}",
+            *indel_args,
             custom_model_def,
         ]
 
@@ -98,6 +115,9 @@ def simulate_alignment(
 
         if error is not None:
             return error, None
+
+        if add_indels:
+            trim_alignment(outpath, length)
 
         if args.allow_duplicate_sequences:
             break
@@ -174,6 +194,11 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument(
+        "--indels",
+        action="store_true",
+        help="Add insertions and deletions to the alignments",
+    )
+    parser.add_argument(
         "--iqtree",
         "-i",
         type=str,
@@ -248,6 +273,7 @@ if __name__ == "__main__":
             args.iqtree,
             custom_model_def,
             custom_model_args,
+            args.indels,
             args.outdir,
             args.length,
             args.max_attempts,
