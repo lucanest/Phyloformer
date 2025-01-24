@@ -100,9 +100,26 @@ cat data/cmp_topo.csv | awk 'BEGIN {FS=","} NR>1{sum += $5; n+=1} END {printf "%
 
 
 ### Simulating data
-Simulate trees with [`simulate_trees.py`](./simulate_trees.py), if you want to simulate LG+GC alignments use [`alisim.py`](./alisim.py). 
-If you want to use Cherry to simulate alignments use [`TODO`](todo), for SelReg use [`TODO`](todo).
 
+#### Simulating trees
+Simulate trees with [`simulate_trees.py`](./simulate_trees.py).  
+Here we simulate 100 birth-death trees with 60 tips each and write them all to the `simulated_trees` directory:  
+
+```shell
+python simulate_trees.py --ntips 60 --ntrees 100 --output simulated_trees --type birth-death
+```
+
+#### Simulating LG+GC alignments
+To do this you can use [`alisim.py`](./alisim.py), which calls IQTree's alisim under the hood. 
+Here we simulate 123 amino acid long alignments from the trees generated above under an LG model with GC site heterogeneity. We write these alignments to the `simulated_alignments` directory: 
+
+```shell
+python alisim.py --outdir simulated_alignments --substitution LG --gamma GC --length 123 --allow-duplicate-sequences simulated_trees
+```
+
+If you want alignments that do not contain any duplicated sequences, you can remove the `--allow-duplicate-sequences` flag, the script will then retry generating alignments for a given tree until we have one with no duplicate sequences or until we reach the maximum number of retries specified by the `--max-attempts` flag.  
+
+#### Example: simulating a full LG+GC testing set
 Let us simulate a small testing set with different tree sizes:
 
 ```shell
@@ -115,18 +132,37 @@ for i in $(seq 10 10 80); do
 done
 
 # Simulate 250-AA long alignments using LG+GC from the simulated trees
-# here we specify the iqtree binary given in this repo and allow duplicate sequences 
-# in the MSAs we get as output
+# here we specify the iqtree binary given in this repo and we do not allow
+# duplicate sequences in the MSAs we get as output
 python alisim.py \
     --outdir data/test_set/alignments \
     --substitution LG \
     --gamma GC \
     --iqtree ./bin/bin_linux/iqtree_2.2.0 \
     --length 250 \
-    --allow-duplicates \
     --max-attempts 1 \
     data/test_set/trees
 ```
+
+#### Simulating data under more realistic models
+##### Adding Indels
+This is done with the same script as normal `LG+GC` *(see [above](#simulating-lg%2Bgc-alignments))* but adding the `--indel` flag
+
+##### CherryML alignments
+You can simulate alignments using the CherryML model by calling the `./bin/simcherry.sh` bash script, this call python scripts within `bin/simulateWithCoevolution/`.  
+Here we simulate alignments unde the CherryML model for trees generated beforehand, we specify 500 amino acid long MSAs so it wil simulate 250 pairs of correlated sites, and write them to the `cherry_alignments` directory: 
+
+```shell
+./bin/simcherry.sh simulated_trees cherry_alignments 500
+```
+
+##### SelReg alignments
+Similar to CherryML, there is a `bin/simselreg.sh` bash script which calls the `pastek` binary included in this repository. It is called in the same way as the script above but you must also specify the path for the pastek binary *(in this instance in the `bin_macos` directory)*:  
+```shell
+./bin/simselreg.sh simulated_trees selreg_alignments 500 ./bin/bin_macos/pastek
+```
+
+**N.B** It is important to note that there is no process in place to deal with duplicate sequences in alignments within the `simcherry.sh` and the `simselreg.sh` scripts. 
 
 ### Training a Phyloformer model
 Use the [`train_distributed`](./train_distributed.py) script to train or fine-tune a PF model on some data.
@@ -134,7 +170,7 @@ Training is done using a `lightning` wrapper, so make sure that is installed bef
 This script is made to run on a CUDA GPU within a SLURM environment but it should run fine on a personlal computer.   
 *If you wish to train on modern ARM architecture Apple machines, the script will run on the CPU instead f the GPU because of a bug in the MPS implementation of `Elu()`.*
 
-For this I will assume that you have your training data organized as follows:
+For this we will assume that you have your training data organized as follows:
 ```
 data/
 ├── train/
@@ -224,7 +260,7 @@ python train_distributed.py \
 
 This should cover all use cases for training, please refer to the [`cli_reference.md`](./cli_reference.md) file for all the flags or open an issue if you believe that something is missing.
 
-### Re-producing figures
+### Reproducing figures
 Use the [`make_plots`](./make_plots.py) script to reproduce all paper figures. 
 
 ```shell
