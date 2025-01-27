@@ -56,6 +56,7 @@ Some pre-built binaries are included in this repo both for [linux AMD64](./bin/b
 - [`goalign`](https://github.com/evolbioinfo/goalign): for manipulating alignments
 - [`phylotree`](https://github.com/lucblassel/phylotree-rs): for manipulating newick formatted phylogenetic trees
 - [`phylocompare`](https://github.com/lucblassel/phylocompare): for batch comparison of newick formatted phylogenetic trees
+- [`pastek`](https://gitlab.in2p3.fr/pveber/pastek): for simulating alignments under the SelReg evolution model *(Only the macos binary is included, for linux please refer to the pastek repo for build instructions)*
 
 If any of these executables do not run on your platform you can find more
 information as well as builds and buil-instruction in the links to each tool's
@@ -146,10 +147,10 @@ python alisim.py \
 
 #### Simulating data under more realistic models
 ##### Adding Indels
-This is done with the same script as normal `LG+GC` *(see [above](#simulating-lg%2Bgc-alignments))* but adding the `--indel` flag
+This is done with the same script as normal `LG+GC` *(see [above](#simulating-lggc-alignments))* but adding the `--indel` flag
 
 ##### CherryML alignments
-You can simulate alignments using the CherryML model by calling the `./bin/simcherry.sh` bash script, this call python scripts within `bin/simulateWithCoevolution/`.  
+You can simulate alignments using the CherryML model by calling the [`simcherry.sh`](./bin/simcherry.sh) bash script, this call python scripts within `bin/simulateWithCoevolution/`.  
 Here we simulate alignments unde the CherryML model for trees generated beforehand, we specify 500 amino acid long MSAs so it wil simulate 250 pairs of correlated sites, and write them to the `cherry_alignments` directory: 
 
 ```shell
@@ -157,12 +158,33 @@ Here we simulate alignments unde the CherryML model for trees generated beforeha
 ```
 
 ##### SelReg alignments
-Similar to CherryML, there is a `bin/simselreg.sh` bash script which calls the `pastek` binary included in this repository. It is called in the same way as the script above but you must also specify the path for the pastek binary *(in this instance in the `bin_macos` directory)*:  
+Similar to CherryML, there is a [`simselreg.sh`](./bin/simselreg.sh) bash script which calls the `pastek` binary included in this repository. It is called in the same way as the script above but you must also specify the path for the pastek binary *(in this instance in the `bin_macos` directory)*:  
 ```shell
 ./bin/simselreg.sh simulated_trees selreg_alignments 500 ./bin/bin_macos/pastek
 ```
 
-**N.B** It is important to note that there is no process in place to deal with duplicate sequences in alignments within the `simcherry.sh` and the `simselreg.sh` scripts. 
+**N.B** It is important to note that there is no process in place to deal with duplicate sequences in alignments within the `simcherry.sh` and the `simselreg.sh` scripts, you can do that on your own with external tools like [`goalign`](https://github.com/evolbioinfo/goalign), [`seqtools`](https://github.com/lucblassel/seqtools) or the following batch snippet which moves alignments without duplicates to the `no_dupes` directory:   
+
+```bash
+ALN_DIR=#PATH TO YOUR ALIGNMENTS
+
+mkdir "$ALN_DIR/no_dupes" 
+
+c=0
+cd "$ALN_DIR"
+for i in *.fasta; do
+  num=$(echo $i | awk -F '_' '{print $2}')
+  num=$((num * 2))
+  j=$(sort $i | uniq | wc -l)
+  if [[ $j -lt $num ]]; then
+    c=$((c + 1))
+  else 
+    mv "$i" "$ALN_DIR/no_dupes"
+  fi
+done
+cd - 
+echo "$c trees/alignments with duplicates were removed"
+```
 
 ### Training a Phyloformer model
 Use the [`train_distributed`](./train_distributed.py) script to train or fine-tune a PF model on some data.
