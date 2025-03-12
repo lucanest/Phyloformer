@@ -12,13 +12,13 @@
 This repository contains the scripts for [the paper](https://www.biorxiv.org/content/10.1101/2024.06.17.599404v1):
 
 ```bibtex
-@article{Nesterenko2024phyloformer,
-  author={Nesterenko Luca, Luc Blassel, Philippe Veber, Boussau Bastien, Jacob Laurent},
-  title={Phyloformer: Fast, accurate and versatile phylogenetic reconstruction with deep neural networks},
-  doi={10.1101/2024.06.17.599404},
-  url={https://www.biorxiv.org/content/10.1101/2024.06.17.599404v1},
-  year={2024},
-  journal={bioRxiv}
+@article{10.1093/molbev/msaf051,
+    author = {Nesterenko, Luca and Blassel, Luc and Veber, Philippe and Boussau, Bastien and Jacob, Laurent},
+    title = {Phyloformer: Fast, accurate and versatile phylogenetic reconstruction with deep neural networks},
+    journal = {Molecular Biology and Evolution},
+    year = {2025},
+    doi = {10.1093/molbev/msaf051},
+    url = {https://doi.org/10.1093/molbev/msaf051},
 }
 ```
 
