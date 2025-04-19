@@ -1,5 +1,6 @@
 import argparse
 import os
+import numpy as np
 from glob import glob
 from pathlib import Path
 
@@ -117,6 +118,6 @@ if __name__ == "__main__":
 
             # Write tree to disk if requested
             if args.trees:
-                dm = DistanceMatrix(dm.cpu().detach().numpy(), ids=ids)
+                dm = DistanceMatrix(dm.cpu().detach().numpy().astype(np.float64), ids=ids)
                 with open(treepath, "w") as outfile:
-                    outfile.write(nj(dm, result_constructor=str))
+                    outfile.write(str(nj(dm)))
